@@ -9,7 +9,7 @@ import { queryCkan } from "./clients/ckan.js";
 
 const server = new McpServer({
   name: "opendata-cat",
-  version: "0.0.1",
+  version: "0.0.2",
 });
 
 // Tool 1: search_datasets

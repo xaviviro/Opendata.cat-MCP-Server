@@ -13,7 +13,7 @@
 
 Servidor [MCP](https://modelcontextprotocol.io/) (Model Context Protocol) que connecta els models de llenguatge (Claude, ChatGPT, Gemini...) amb les **dades obertes publiques de Catalunya**. Cerca datasets, explora metadades i consulta dades reals de la Generalitat, l'Ajuntament de Barcelona i la Diputacio de Barcelona directament des del teu assistent d'IA.
 
-Un projecte d'**[opendata.cat](https://opendata.cat)** — associacio sense anim de lucre fundada el 2012 que promou la transparencia, la difusio i l'estandarditzacio de les dades obertes a Catalunya.
+Un projecte d'**[opendata.cat](https://opendata.cat)** — associacio sense anim de lucre fundada el 2012 que promou la transparencia, la difusio i l'estandarditzacio de les dades obertes a Catalunya. Inspirat en el projecte [datagouv-mcp](https://github.com/datagouv/datagouv-mcp) del govern frances.
 
 ## Portals disponibles
 
