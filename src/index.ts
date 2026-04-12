@@ -6,10 +6,11 @@ import { z } from "zod";
 import { searchDatasets, getDatasetInfo, getCategories } from "./api.js";
 import { querySocrata } from "./clients/socrata.js";
 import { queryCkan } from "./clients/ckan.js";
+import { queryDiba } from "./clients/diba.js";
 
 const server = new McpServer({
   name: "opendata-cat",
-  version: "0.0.2",
+  version: "0.0.3",
 });
 
 // Tool 1: search_datasets
@@ -87,6 +88,9 @@ server.tool(
 
       if (dataset.api_type === "socrata") {
         results = await querySocrata(dataset.api_endpoint, filters, search, limit, offset);
+      } else if (dataset.api_type === "diba") {
+        const data = await queryDiba(dataset.api_endpoint, filters, search, limit, offset);
+        results = data.elements;
       } else {
         const data = await queryCkan(dataset.api_endpoint, filters, search, limit, offset);
         results = data.records;
