@@ -17,7 +17,7 @@ export interface DatasetDetail {
   description: string;
   category: string;
   tags: string[];
-  api_type: "socrata" | "ckan" | "diba";
+  api_type: string;
   api_endpoint: string;
   formats: string[];
   fields: { name: string; type: string; description: string }[];

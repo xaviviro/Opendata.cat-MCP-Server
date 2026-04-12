@@ -10,7 +10,7 @@ import { queryDiba } from "./clients/diba.js";
 
 const server = new McpServer({
   name: "opendata-cat",
-  version: "0.0.3",
+  version: "0.0.4",
 });
 
 // Tool 1: search_datasets
@@ -83,6 +83,19 @@ server.tool(
       return { content: [{ type: "text" as const, text: `Dataset '${dataset_id}' no trobat.` }] };
     }
 
+    // Datasets no queryables: retornar enllaç directe
+    if (dataset.api_type === "file_download" || dataset.api_type === "restricted") {
+      const msg = dataset.api_type === "restricted"
+        ? `Aquest dataset requereix autenticació (token). Accedeix-hi directament:`
+        : `Aquest dataset no té API de consulta. Descarrega'l directament:`;
+      return {
+        content: [{
+          type: "text" as const,
+          text: `${msg}\n${dataset.api_endpoint}\n\nFormats disponibles: ${dataset.formats.join(", ")}`,
+        }],
+      };
+    }
+
     try {
       let results: Record<string, unknown>[];
 
@@ -91,9 +104,16 @@ server.tool(
       } else if (dataset.api_type === "diba") {
         const data = await queryDiba(dataset.api_endpoint, filters, search, limit, offset);
         results = data.elements;
-      } else {
+      } else if (dataset.api_type === "ckan") {
         const data = await queryCkan(dataset.api_endpoint, filters, search, limit, offset);
         results = data.records;
+      } else {
+        return {
+          content: [{
+            type: "text" as const,
+            text: `Tipus d'API '${dataset.api_type}' no suportat per consulta directa.\nAccedeix al dataset: ${dataset.api_endpoint}`,
+          }],
+        };
       }
 
       return {
