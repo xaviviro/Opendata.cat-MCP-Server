@@ -19,9 +19,9 @@ Un projecte d'**[opendata.cat](https://opendata.cat)** — associacio sense anim
 
 | Portal | Datasets | API | Dades |
 |--------|----------|-----|-------|
-| [Generalitat de Catalunya](https://analisi.transparenciacatalunya.cat) | ~1.058 | Socrata | Medi ambient, salut, educacio, economia, transport... |
-| [Ajuntament de Barcelona](https://opendata-ajuntament.barcelona.cat) | ~555 | CKAN | Urbanisme, mobilitat, cultura, demografia, pressupostos... |
-| [Diputacio de Barcelona](https://dadesobertes.diba.cat) | ~90 | CKAN | Municipis, equipaments, patrimoni, energia, territori... |
+| [Generalitat de Catalunya](https://analisi.transparenciacatalunya.cat) | 1.058 | Socrata | Medi ambient, salut, educacio, economia, transport... |
+| [Ajuntament de Barcelona](https://opendata-ajuntament.barcelona.cat) | 555 | CKAN | Urbanisme, mobilitat, cultura, demografia, pressupostos... |
+| [Diputacio de Barcelona](https://dadesobertes.diba.cat) | 90 | CKAN | Municipis, equipaments, patrimoni, energia, territori... |
 
 El cataleg s'actualitza automaticament cada setmana.
 
