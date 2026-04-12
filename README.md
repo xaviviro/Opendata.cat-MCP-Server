@@ -17,13 +17,18 @@ Un projecte d'**[opendata.cat](https://opendata.cat)** — associacio sense anim
 
 ## Portals disponibles
 
-| Portal | Datasets | API | Dades |
-|--------|----------|-----|-------|
-| [Generalitat de Catalunya](https://analisi.transparenciacatalunya.cat) | 1.058 | Socrata | Medi ambient, salut, educacio, economia, transport... |
-| [Ajuntament de Barcelona](https://opendata-ajuntament.barcelona.cat) | 555 | CKAN | Urbanisme, mobilitat, cultura, demografia, pressupostos... |
-| [Diputacio de Barcelona](https://dadesobertes.diba.cat) | 90 | CKAN | Municipis, equipaments, patrimoni, energia, territori... |
+| Portal | Datasets | Queryables | API | Dades |
+|--------|----------|-----------|-----|-------|
+| [Generalitat de Catalunya](https://analisi.transparenciacatalunya.cat) | 1.058 | 1.058 | Socrata | Medi ambient, salut, educacio, economia, transport... |
+| [Ajuntament de Barcelona](https://opendata-ajuntament.barcelona.cat) | 555 | ~464 | CKAN | Urbanisme, mobilitat, cultura, demografia, pressupostos... |
+| [Diputacio de Barcelona](https://dadesobertes.diba.cat) | 90 | ~29 | REST | Municipis, equipaments, patrimoni, energia, territori... |
 
-El cataleg s'actualitza automaticament cada setmana.
+El cataleg s'actualitza automaticament cada setmana. Cada endpoint es valida per assegurar que funciona.
+
+**Tipus d'acces:**
+- **Queryable** (socrata, ckan, diba): consulta amb filtres, cerca i paginacio directa
+- **File download**: descarrega directa de CSV, JSON, XLSX o fitxers GIS
+- **Restricted**: requereix token d'autenticacio
 
 ## Installacio rapida
 
