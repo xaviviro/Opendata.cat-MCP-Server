@@ -13,7 +13,7 @@ import { queryCido } from "./clients/cido.js";
 
 const server = new McpServer({
   name: "opendata-cat",
-  version: "0.0.8",
+  version: "0.0.9",
 });
 
 // Tool 1: search_datasets
@@ -173,6 +173,44 @@ server.tool(
   },
 );
 
+// Tool 7: related_datasets
+server.tool(
+  "related_datasets",
+  "Retorna datasets relacionats d'ALTRES portals. Ideal per descobrir dades complementàries.",
+  {
+    dataset_id: z.string().describe("ID del dataset del qual vols trobar relacionats"),
+  },
+  async ({ dataset_id }) => {
+    const dataset = await getDatasetInfo(dataset_id);
+    if (!dataset) {
+      return { content: [{ type: "text" as const, text: `Dataset '${dataset_id}' no trobat.` }] };
+    }
+    // Fetch related from API (stored in DB by enrichment script)
+    const resp = await fetch(`https://opendata.cat/api/dataset.php?id=${encodeURIComponent(dataset_id)}`);
+    if (!resp.ok) {
+      return { content: [{ type: "text" as const, text: "Error obtenint relacions." }] };
+    }
+    const full = await resp.json();
+    const related = full.related ?? [];
+    if (!related.length) {
+      return { content: [{ type: "text" as const, text: `No hi ha datasets relacionats per a '${dataset.name}'.` }] };
+    }
+    // Enrich with names
+    const details = await Promise.all(
+      related.slice(0, 5).map(async (r: { id: string; score: number }) => {
+        const info = await getDatasetInfo(r.id);
+        return info ? { dataset_id: r.id, name: info.name, portal: info.portal_id, category: info.category, similarity: r.score } : null;
+      }),
+    );
+    return {
+      content: [{
+        type: "text" as const,
+        text: JSON.stringify({ dataset: dataset.name, related: details.filter(Boolean) }, null, 2),
+      }],
+    };
+  },
+);
+
 async function main() {
   const mode = process.argv.includes("--http") ? "http" : "stdio";
   const port = parseInt(process.env.MCP_PORT || "3100", 10);
@@ -190,7 +228,7 @@ async function main() {
       // Health check
       if (req.url === "/health") {
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.0.8" }));
+        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.0.9" }));
         return;
       }
 
