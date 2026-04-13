@@ -14,7 +14,7 @@ import { queryOpendatasoft } from "./clients/opendatasoft.js";
 
 const server = new McpServer({
   name: "opendata-cat",
-  version: "0.0.10",
+  version: "0.0.11",
 });
 
 // Tool 1: search_datasets
@@ -220,6 +220,196 @@ server.tool(
   },
 );
 
+// ===== PROMPTS =====
+
+server.prompt(
+  "estat_embassaments",
+  "Analitza l'estat actual dels embassaments de Catalunya amb gràfiques d'evolució.",
+  () => ({
+    messages: [{
+      role: "user" as const,
+      content: {
+        type: "text" as const,
+        text: "Consulta l'estat actual dels embassaments de les Conques Internes de Catalunya.\n\n"
+          + "1. Usa search_datasets amb 'embassament' per trobar el dataset rellevant\n"
+          + "2. Usa query_dataset per obtenir les últimes dades\n"
+          + "3. Presenta una taula amb cada embassament: nom, volum actual (hm³), percentatge ple, i variació\n"
+          + "4. Genera un gràfic ASCII o Markdown amb l'evolució dels nivells\n"
+          + "5. Destaca embassaments en situació crítica (< 40%) i els que estan millor\n"
+          + "6. Compara amb el dataset d'estat de sequera si n'hi ha\n\n"
+          + "Mostra les dades de forma visual i fàcil d'entendre.",
+      },
+    }],
+  }),
+);
+
+server.prompt(
+  "trens_fgc_temps_real",
+  "Consulta l'estat dels trens de FGC en temps real: retards, alertes i posicions.",
+  () => ({
+    messages: [{
+      role: "user" as const,
+      content: {
+        type: "text" as const,
+        text: "Consulta l'estat en temps real dels trens de Ferrocarrils de la Generalitat de Catalunya (FGC).\n\n"
+          + "1. Usa search_datasets amb portal 'fgc' per trobar els datasets GTFS Realtime\n"
+          + "2. Consulta 'trip-updates' per veure retards actuals\n"
+          + "3. Consulta 'vehicle-positions' per veure on són els trens\n"
+          + "4. Consulta 'alerts' per veure si hi ha alertes de servei\n\n"
+          + "Presenta un resum clar:\n"
+          + "- Trens amb retard (quants minuts, quina línia)\n"
+          + "- Alertes actives de servei\n"
+          + "- Estat general: normal / amb incidències / interromput",
+      },
+    }],
+  }),
+);
+
+server.prompt(
+  "qualitat_aire",
+  "Analitza la qualitat de l'aire a una estació o municipi de Catalunya.",
+  { lloc: z.string().optional().describe("Nom del municipi o estació (ex: 'Barcelona', 'Sabadell')") },
+  ({ lloc }) => {
+    const filtreText = lloc ? ` a ${lloc}` : " a les principals estacions";
+    return {
+      messages: [{
+        role: "user" as const,
+        content: {
+          type: "text" as const,
+          text: `Analitza la qualitat de l'aire${filtreText}.\n\n`
+            + "1. Usa search_datasets amb 'qualitat aire contaminació' per trobar els datasets rellevants\n"
+            + "2. Consulta les últimes mesures disponibles"
+            + (lloc ? ` filtrant per '${lloc}'` : "") + "\n"
+            + "3. Presenta els nivells de: NO₂, PM10, PM2.5, O₃, SO₂ (els que hi hagi)\n"
+            + "4. Compara amb els llindars de l'OMS i la normativa UE\n"
+            + "5. Dona una valoració global: bona / acceptable / dolenta / molt dolenta\n"
+            + "6. Si hi ha dades històriques, mostra la tendència recent\n\n"
+            + "Usa taules i indicadors visuals per fer-ho entenedor.",
+        },
+      }],
+    };
+  },
+);
+
+server.prompt(
+  "accidents_transit",
+  "Analitza les dades d'accidents de trànsit a Catalunya o a un municipi concret.",
+  { municipi: z.string().optional().describe("Nom del municipi (ex: 'Barcelona', 'Hospitalet')") },
+  ({ municipi }) => {
+    const filtreText = municipi ? ` a ${municipi}` : " a Catalunya";
+    return {
+      messages: [{
+        role: "user" as const,
+        content: {
+          type: "text" as const,
+          text: `Analitza les dades d'accidents de trànsit${filtreText}.\n\n`
+            + "1. Usa search_datasets amb 'accidents trànsit" + (municipi ? ` ${municipi}` : "") + "'\n"
+            + "2. Consulta les dades més recents\n"
+            + "3. Presenta: nombre total d'accidents, distribució per gravetat (mortals, ferits greus, lleus)\n"
+            + "4. Si hi ha dades geolocalitzades, identifica els punts negres\n"
+            + "5. Analitza tendències: augmenten o disminueixen?\n"
+            + "6. Busca datasets relacionats amb related_datasets per completar l'anàlisi\n\n"
+            + "Presenta conclusions clares amb dades concretes.",
+        },
+      }],
+    };
+  },
+);
+
+server.prompt(
+  "pressupostos_municipals",
+  "Explora i compara els pressupostos municipals d'ajuntaments catalans.",
+  { municipi: z.string().optional().describe("Nom del municipi") },
+  ({ municipi }) => {
+    const filtreText = municipi ? ` de ${municipi}` : "";
+    return {
+      messages: [{
+        role: "user" as const,
+        content: {
+          type: "text" as const,
+          text: `Explora els pressupostos municipals${filtreText}.\n\n`
+            + "1. Usa search_datasets amb 'pressupost" + (municipi ? ` ${municipi}` : " municipal") + "'\n"
+            + "2. Consulta les últimes dades de pressupost disponibles\n"
+            + "3. Desglossa: ingressos vs despeses, partides principals\n"
+            + "4. Si hi ha dades multi-any, mostra l'evolució\n"
+            + "5. Destaca les partides més grans i les variacions significatives\n\n"
+            + "Presenta les xifres en format comprensible (milions €) amb taules.",
+        },
+      }],
+    };
+  },
+);
+
+server.prompt(
+  "compara_municipis",
+  "Compara dos municipis catalans en totes les dades obertes disponibles.",
+  {
+    municipi_a: z.string().describe("Primer municipi"),
+    municipi_b: z.string().describe("Segon municipi"),
+  },
+  ({ municipi_a, municipi_b }) => ({
+    messages: [{
+      role: "user" as const,
+      content: {
+        type: "text" as const,
+        text: `Compara els municipis de ${municipi_a} i ${municipi_b} amb totes les dades obertes disponibles.\n\n`
+          + `1. Usa search_datasets per trobar datasets que incloguin '${municipi_a}'\n`
+          + `2. Usa search_datasets per trobar datasets que incloguin '${municipi_b}'\n`
+          + "3. Per cada tema comú (població, pressupost, equipaments, transport...), consulta les dades dels dos municipis\n"
+          + "4. Presenta una taula comparativa amb les dades clau\n"
+          + "5. Destaca les diferències més significatives\n\n"
+          + "Organitza la comparativa per temes i indica la font de cada dada.",
+      },
+    }],
+  }),
+);
+
+server.prompt(
+  "descobreix_dades",
+  "Explora quines dades obertes hi ha disponibles sobre un tema a Catalunya.",
+  { tema: z.string().describe("Tema a explorar (ex: 'educació', 'medi ambient', 'turisme')") },
+  ({ tema }) => ({
+    messages: [{
+      role: "user" as const,
+      content: {
+        type: "text" as const,
+        text: `Explora totes les dades obertes disponibles sobre '${tema}' a Catalunya.\n\n`
+          + `1. Usa search_datasets amb '${tema}' (limit: 50)\n`
+          + "2. Agrupa els resultats per portal i categoria\n"
+          + "3. Per als 3-5 datasets més rellevants, usa get_dataset_info per mostrar detalls (camps, tipus, actualització)\n"
+          + "4. Usa related_datasets per descobrir dades complementàries\n"
+          + "5. Suggereix 3 anàlisis interessants que es podrien fer creuant aquests datasets\n\n"
+          + "L'objectiu és donar un mapa complet de quines dades existeixen i què es pot fer amb elles.",
+      },
+    }],
+  }),
+);
+
+server.prompt(
+  "analisi_bombers",
+  "Analitza les actuacions dels Bombers de la Generalitat: tipus d'emergències, distribució territorial i tendències.",
+  { comarca: z.string().optional().describe("Filtrar per comarca (ex: 'Barcelonès', 'Vallès Occidental')") },
+  ({ comarca }) => {
+    const filtreText = comarca ? ` a la comarca de ${comarca}` : "";
+    return {
+      messages: [{
+        role: "user" as const,
+        content: {
+          type: "text" as const,
+          text: `Analitza les actuacions dels Bombers de la Generalitat${filtreText}.\n\n`
+            + "1. Usa search_datasets amb 'bombers actuacions emergències'\n"
+            + "2. Consulta els datasets d'actuacions, GRAF i EAIC\n"
+            + "3. Presenta: nombre total d'actuacions, distribució per tipus (incendis, rescats, inundacions...)\n"
+            + "4. Si hi ha dades temporals, mostra estacionalitat (estiu = incendis?)\n"
+            + "5. Identifica les zones amb més actuacions\n"
+            + (comarca ? `6. Filtra específicament per la comarca de ${comarca}\n` : "")
+            + "\nFes una anàlisi visual amb taules i percentatges.",
+        },
+      }],
+    };
+  },
+);
+
 async function main() {
   const mode = process.argv.includes("--http") ? "http" : "stdio";
   const port = parseInt(process.env.MCP_PORT || "3100", 10);
@@ -237,7 +427,7 @@ async function main() {
       // Health check
       if (req.url === "/health") {
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.0.10" }));
+        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.0.11" }));
         return;
       }
 

@@ -140,17 +140,33 @@ Llista els portals disponibles amb el nombre de datasets de cadascun. No requere
 
 Llista totes les categories i temes de datasets disponibles amb comptadors per portal. Ideal per descobrir quins tipus de dades hi ha.
 
+## Prompts disponibles
+
+Prompts predefinits que guien l'LLM pas a pas per fer analisis completes:
+
+| Prompt | Descripcio | Arguments |
+|--------|-----------|-----------|
+| `estat_embassaments` | Estat actual dels embassaments amb grafiques d'evolucio | — |
+| `trens_fgc_temps_real` | Retards, alertes i posicions dels trens FGC en temps real | — |
+| `qualitat_aire` | Analisi de la qualitat de l'aire amb comparativa OMS/UE | `lloc` (opcional) |
+| `accidents_transit` | Analisi d'accidents de transit amb punts negres i tendencies | `municipi` (opcional) |
+| `pressupostos_municipals` | Pressupostos municipals amb desglossament per partides | `municipi` (opcional) |
+| `compara_municipis` | Compara dos municipis en totes les dades disponibles | `municipi_a`, `municipi_b` |
+| `descobreix_dades` | Mapa complet de dades obertes sobre un tema | `tema` |
+| `analisi_bombers` | Actuacions dels Bombers: emergencies, distribucio, tendencies | `comarca` (opcional) |
+
 ## Exemples d'us
 
 Un cop configurat, pots fer preguntes al teu LLM com:
 
-- *"Quins datasets hi ha sobre mobilitat a Barcelona?"*
-- *"Mostra'm les dades de qualitat de l'aire d'ahir"*
-- *"Quants equipaments culturals te Girona?"*
-- *"Dona'm les ultimes dades de pressupostos municipals"*
-- *"Quin es l'estat dels embassaments de Catalunya?"*
-- *"Quines dades obertes hi ha sobre educacio a Catalunya?"*
-- *"Quins tipus de dades teniu disponibles?"*
+- *"Quin es l'estat dels embassaments de Catalunya?"* → prompt `estat_embassaments`
+- *"Hi ha algun tren de FGC amb retard ara mateix?"* → prompt `trens_fgc_temps_real`
+- *"Analitza la qualitat de l'aire a Terrassa"* → prompt `qualitat_aire`
+- *"Fes unes grafiques amb l'evolucio dels accidents de transit a Barcelona"* → prompt `accidents_transit`
+- *"Compara Girona i Tarragona en dades obertes"* → prompt `compara_municipis`
+- *"Quines dades obertes hi ha sobre educacio a Catalunya?"* → prompt `descobreix_dades`
+- *"Dona'm les ultimes dades de pressupostos de Reus"* → prompt `pressupostos_municipals`
+- *"Analitza les actuacions dels Bombers al Valles"* → prompt `analisi_bombers`
 
 ## Com funciona
 
@@ -177,6 +193,11 @@ Les contribucions son benvingudes! Per afegir un nou portal de dades obertes:
 2. O envia un pull request
 
 ## Changelog
+
+### v0.0.11 (2026-04-13)
+- 8 prompts predefinits: embassaments, trens FGC temps real, qualitat aire, accidents, pressupostos, compara municipis, descobreix dades, bombers
+- Crawler incremental: UPSERT en lloc de TRUNCATE, no perd dades si un portal falla
+- Backup automatic despres de cada carrega
 
 ### v0.0.10 (2026-04-13)
 - Afegeix portal FGC (Ferrocarrils de la Generalitat de Catalunya) — 50 datasets via Opendatasoft
