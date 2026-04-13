@@ -7,10 +7,11 @@ import { searchDatasets, getDatasetInfo, getCategories } from "./api.js";
 import { querySocrata } from "./clients/socrata.js";
 import { queryCkan } from "./clients/ckan.js";
 import { queryDiba } from "./clients/diba.js";
+import { queryCido } from "./clients/cido.js";
 
 const server = new McpServer({
   name: "opendata-cat",
-  version: "0.0.5",
+  version: "0.0.6",
 });
 
 // Tool 1: search_datasets
@@ -104,6 +105,9 @@ server.tool(
       } else if (dataset.api_type === "diba") {
         const data = await queryDiba(dataset.api_endpoint, filters, search, limit, offset);
         results = data.elements;
+      } else if (dataset.api_type === "diba_cido") {
+        const data = await queryCido(dataset.api_endpoint, filters, search, limit, offset);
+        results = data.data;
       } else if (dataset.api_type === "ckan") {
         const data = await queryCkan(dataset.api_endpoint, filters, search, limit, offset);
         results = data.records;
