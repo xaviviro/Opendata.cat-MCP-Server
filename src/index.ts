@@ -11,7 +11,7 @@ import { queryCido } from "./clients/cido.js";
 
 const server = new McpServer({
   name: "opendata-cat",
-  version: "0.0.6",
+  version: "0.0.7",
 });
 
 // Tool 1: search_datasets

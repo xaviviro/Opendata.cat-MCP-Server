@@ -22,16 +22,19 @@ Un projecte d'**[opendata.cat](https://opendata.cat)** — associacio sense anim
 | [Generalitat de Catalunya](https://analisi.transparenciacatalunya.cat) | 1.058 | 1.058 | Socrata (SoQL) |
 | [Ajuntament de Barcelona](https://opendata-ajuntament.barcelona.cat) | 555 | 463 | CKAN datastore |
 | [Diputacio de Barcelona](https://dadesobertes.diba.cat) | 90 | 32 | REST + JSON:API (CIDO) |
+| [Consorci AOC](https://dadesobertes.seu-e.cat) | ~893 | ~893 | CKAN datastore |
 
-**1.553 datasets queryables** amb filtres, cerca i paginacio. La resta ofereix descarrega directa de fitxers.
+El Consorci AOC inclou datasets de les **diputacions de Tarragona, Girona i Lleida**, ajuntaments, consells comarcals i altres organismes publics catalans.
+
+**~2.400 datasets queryables** amb filtres, cerca i paginacio. La resta ofereix descarrega directa de fitxers.
 
 El cataleg s'actualitza automaticament cada setmana. Cada endpoint es valida per assegurar que funciona.
 
 **Tipus d'acces:**
 - **Socrata**: consulta SoQL amb filtres i cerca (Generalitat)
-- **CKAN**: datastore_search amb filtres i cerca (Barcelona)
-- **Diba REST**: API do.diba.cat amb paginacio i filtres (Diputacio)
-- **CIDO JSON:API**: api.diba.cat per contractacions, normatives, subvencions, oposicions, convenis (Diputacio)
+- **CKAN**: datastore_search amb filtres i cerca (Barcelona, AOC)
+- **Diba REST**: API do.diba.cat amb paginacio i filtres (Diputacio BCN)
+- **CIDO JSON:API**: api.diba.cat per contractacions, normatives, subvencions, oposicions, convenis (Diputacio BCN)
 - **File download**: descarrega directa de CSV, JSON, XLSX o fitxers GIS
 - **Restricted**: requereix token d'autenticacio (4 datasets BSM)
 
@@ -166,6 +169,38 @@ Les contribucions son benvingudes! Per afegir un nou portal de dades obertes:
 
 1. Obre una [issue](https://github.com/xaviviro/Opendata.cat-MCP-Server/issues) amb la URL del portal i el tipus d'API
 2. O envia un pull request
+
+## Changelog
+
+### v0.0.7 (2026-04-13)
+- Afegeix portal Consorci AOC (~893 datasets de diputacions, ajuntaments, consells comarcals)
+- Cobertura total: ~2.600 datasets, ~2.400 queryables
+- Inclou dades de les diputacions de Tarragona, Girona i Lleida
+
+### v0.0.6 (2026-04-12)
+- Afegeix client CIDO (api.diba.cat) per contractacions, normatives, subvencions, oposicions, convenis
+- Camps filtables reals extrets automaticament per cada endpoint CIDO
+
+### v0.0.5 (2026-04-12)
+- Gestio correcta de datasets no queryables (file_download, restricted)
+- Retorna URL directa en comptes d'error quan un dataset no te API
+
+### v0.0.4 (2026-04-12)
+- Audit complet Barcelona i Diba: api_types correctes per cada dataset
+- Barcelona: resource_id real via package_show (463 queryables)
+- Diba: REST (do.diba.cat) + CIDO (api.diba.cat) + file_download
+- Validador d'endpoints a /api/validate.php
+
+### v0.0.3 (2026-04-12)
+- Afegeix client Diba (do.diba.cat REST API) amb paginacio i filtres
+
+### v0.0.2 (2026-04-12)
+- Afegeix referencia al projecte datagouv-mcp del govern frances
+
+### v0.0.1 (2026-04-12)
+- Versio inicial: 3 portals (Generalitat, Barcelona, Diba)
+- 6 tools: search_datasets, get_dataset_info, list_dataset_fields, query_dataset, list_portals, list_categories
+- Publicat a npm com @opendata.cat/mcp-server
 
 ## Llicencia
 
