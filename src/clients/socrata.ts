@@ -8,10 +8,12 @@ export async function querySocrata(
   const url = new URL(endpoint);
 
   if (filters && Object.keys(filters).length > 0) {
-    const clauses = Object.entries(filters).map(
-      ([key, value]) => `${key}='${value.replace(/'/g, "''")}'`,
-    );
-    url.searchParams.set("$where", clauses.join(" AND "));
+    const clauses = Object.entries(filters)
+      .filter(([key]) => /^[a-zA-Z_][a-zA-Z0-9_-]*$/.test(key))
+      .map(([key, value]) => `\`${key}\`='${value.replace(/'/g, "''")}'`);
+    if (clauses.length > 0) {
+      url.searchParams.set("$where", clauses.join(" AND "));
+    }
   }
 
   if (search) url.searchParams.set("$q", search);

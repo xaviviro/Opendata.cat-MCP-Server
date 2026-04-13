@@ -10,10 +10,11 @@ import { querySocrata } from "./clients/socrata.js";
 import { queryCkan } from "./clients/ckan.js";
 import { queryDiba } from "./clients/diba.js";
 import { queryCido } from "./clients/cido.js";
+import { queryOpendatasoft } from "./clients/opendatasoft.js";
 
 const server = new McpServer({
   name: "opendata-cat",
-  version: "0.0.9",
+  version: "0.0.10",
 });
 
 // Tool 1: search_datasets
@@ -22,7 +23,7 @@ server.tool(
   "Cerca datasets de dades obertes catalanes per text lliure. Retorna nom, descripció, portal i formats.",
   {
     query: z.string().describe("Text de cerca (ex: 'qualitat aire', 'pressupostos')"),
-    portal: z.string().optional().describe("Filtrar per portal: 'generalitat', 'barcelona' o 'diba'"),
+    portal: z.string().optional().describe("Filtrar per portal: 'generalitat', 'barcelona', 'diba', 'aoc', 'reus', 'girona', 'fgc'"),
     category: z.string().optional().describe("Filtrar per categoria"),
     limit: z.number().optional().default(20).describe("Nombre màxim de resultats (defecte: 20)"),
   },
@@ -113,6 +114,9 @@ server.tool(
       } else if (dataset.api_type === "ckan") {
         const data = await queryCkan(dataset.api_endpoint, filters, search, limit, offset);
         results = data.records;
+      } else if (dataset.api_type === "opendatasoft") {
+        const data = await queryOpendatasoft(dataset.api_endpoint, filters, search, limit, offset);
+        results = data.records;
       } else {
         return {
           content: [{
@@ -146,19 +150,24 @@ server.tool(
   {},
   async () => {
     const portals = [
-      { id: "generalitat", name: "Generalitat de Catalunya", url: "https://analisi.transparenciacatalunya.cat", api_type: "socrata" },
-      { id: "barcelona", name: "Ajuntament de Barcelona", url: "https://opendata-ajuntament.barcelona.cat", api_type: "ckan" },
-      { id: "diba", name: "Diputació de Barcelona", url: "https://dadesobertes.diba.cat", api_type: "ckan" },
+      { id: "generalitat", name: "Generalitat de Catalunya", url: "https://analisi.transparenciacatalunya.cat", api: "Socrata" },
+      { id: "barcelona", name: "Ajuntament de Barcelona", url: "https://opendata-ajuntament.barcelona.cat", api: "CKAN" },
+      { id: "diba", name: "Diputació de Barcelona", url: "https://dadesobertes.diba.cat", api: "CKAN" },
+      { id: "aoc", name: "Consorci AOC (diputacions, ajuntaments, consells comarcals)", url: "https://dadesobertes.seu-e.cat", api: "CKAN" },
+      { id: "reus", name: "Ajuntament de Reus", url: "https://opendata.reus.cat", api: "CKAN" },
+      { id: "girona", name: "Ajuntament de Girona", url: "https://www.girona.cat/opendata/", api: "CKAN" },
+      { id: "fgc", name: "Ferrocarrils de la Generalitat de Catalunya", url: "https://dadesobertes.fgc.cat", api: "Opendatasoft" },
     ];
 
-    const counts = await Promise.all(
-      portals.map(async (p) => {
-        const result = await searchDatasets("", p.id, undefined, 1);
-        return { ...p, dataset_count: result.total };
-      }),
-    );
+    const cats = await getCategories();
+    const portalCounts = new Map(cats.portals.map((p) => [p.portal_id, p.total]));
 
-    return { content: [{ type: "text" as const, text: JSON.stringify(counts, null, 2) }] };
+    const result = portals.map((p) => ({
+      ...p,
+      dataset_count: portalCounts.get(p.id) ?? 0,
+    }));
+
+    return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
   },
 );
 
@@ -228,7 +237,7 @@ async function main() {
       // Health check
       if (req.url === "/health") {
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.0.9" }));
+        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.0.10" }));
         return;
       }
 

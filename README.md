@@ -12,7 +12,7 @@
 
 # Opendata.cat MCP Server
 
-Servidor [MCP](https://modelcontextprotocol.io/) (Model Context Protocol) que connecta els models de llenguatge (Claude, ChatGPT, Gemini...) amb les **dades obertes publiques de Catalunya**. Cerca datasets, explora metadades i consulta dades reals de la Generalitat, l'Ajuntament de Barcelona i la Diputacio de Barcelona directament des del teu assistent d'IA.
+Servidor [MCP](https://modelcontextprotocol.io/) (Model Context Protocol) que connecta els models de llenguatge (Claude, ChatGPT, Gemini...) amb les **dades obertes publiques de Catalunya**. Cerca datasets, explora metadades i consulta dades reals de 7 portals catalans directament des del teu assistent d'IA.
 
 Un projecte d'**[opendata.cat](https://opendata.cat)** — associacio sense anim de lucre fundada el 2012 que promou la transparencia, la difusio i l'estandarditzacio de les dades obertes a Catalunya. Inspirat en el projecte [datagouv-mcp](https://github.com/datagouv/datagouv-mcp) del govern frances.
 
@@ -26,18 +26,20 @@ Un projecte d'**[opendata.cat](https://opendata.cat)** — associacio sense anim
 | [Consorci AOC](https://dadesobertes.seu-e.cat) | ~893 | CKAN datastore |
 | [Ajuntament de Reus](https://opendata.reus.cat) | 119 | CKAN datastore |
 | [Ajuntament de Girona](https://www.girona.cat/opendata/) | 53 | CKAN datastore |
+| [FGC (Ferrocarrils)](https://dadesobertes.fgc.cat) | 50 | Opendatasoft |
 
 El Consorci AOC inclou datasets de les **diputacions de Tarragona, Girona i Lleida**, ajuntaments, consells comarcals i altres organismes publics catalans.
 
-**+2.700 datasets** de 6 portals. La majoria queryables amb filtres, cerca i paginacio.
+**+2.800 datasets** de 7 portals. La majoria queryables amb filtres, cerca i paginacio.
 
 El cataleg s'actualitza automaticament cada setmana. Cada endpoint es valida per assegurar que funciona.
 
 **Tipus d'acces:**
 - **Socrata**: consulta SoQL amb filtres i cerca (Generalitat)
-- **CKAN**: datastore_search amb filtres i cerca (Barcelona, AOC)
+- **CKAN**: datastore_search amb filtres i cerca (Barcelona, AOC, Reus, Girona)
 - **Diba REST**: API do.diba.cat amb paginacio i filtres (Diputacio BCN)
 - **CIDO JSON:API**: api.diba.cat per contractacions, normatives, subvencions, oposicions, convenis (Diputacio BCN)
+- **Opendatasoft**: API records amb filtres i cerca (FGC — horaris GTFS, trens temps real, estacions esqui)
 - **File download**: descarrega directa de CSV, JSON, XLSX o fitxers GIS
 - **Restricted**: requereix token d'autenticacio (4 datasets BSM)
 
@@ -89,6 +91,7 @@ Afegeix al fitxer `.vscode/mcp.json` del teu projecte:
 | `query_dataset` | Consulta dades reals directament al portal origen |
 | `list_portals` | Llista els portals disponibles amb estadistiques |
 | `list_categories` | Llista categories i temes disponibles amb comptadors |
+| `related_datasets` | Retorna datasets relacionats d'altres portals |
 
 ### search_datasets
 
@@ -96,7 +99,7 @@ Cerca datasets per text lliure.
 
 ```
 query: "qualitat aire"
-portal: "barcelona"        # opcional: generalitat, barcelona, diba
+portal: "barcelona"        # opcional: generalitat, barcelona, diba, aoc, reus, girona, fgc
 category: "Medi Ambient"   # opcional
 limit: 20                  # opcional (defecte: 20)
 ```
@@ -174,6 +177,13 @@ Les contribucions son benvingudes! Per afegir un nou portal de dades obertes:
 2. O envia un pull request
 
 ## Changelog
+
+### v0.0.10 (2026-04-13)
+- Afegeix portal FGC (Ferrocarrils de la Generalitat de Catalunya) — 50 datasets via Opendatasoft
+- Nou client Opendatasoft per consultar dades de transport, esqui, meteorologia, GTFS
+- list_portals ara llista els 7 portals (abans nomes 3)
+- Fix seguretat: validacio de claus de filtre SoQL contra injeccio
+- Cobertura total: ~2.800 datasets de 7 portals
 
 ### v0.0.7 (2026-04-13)
 - Afegeix portal Consorci AOC (~893 datasets de diputacions, ajuntaments, consells comarcals)
