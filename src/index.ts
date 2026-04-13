@@ -14,7 +14,7 @@ import { queryOpendatasoft } from "./clients/opendatasoft.js";
 
 const server = new McpServer({
   name: "opendata-cat",
-  version: "0.0.11",
+  version: "0.0.12",
 });
 
 // Tool 1: search_datasets
@@ -410,6 +410,158 @@ server.prompt(
   },
 );
 
+// ===== PROMPTS DE DESCOBRIMENT =====
+
+server.prompt(
+  "novetats",
+  "Mostra els datasets actualitzats més recentment als portals de dades obertes de Catalunya.",
+  { portal: z.string().optional().describe("Filtrar per portal: generalitat, barcelona, diba, aoc, reus, girona, fgc") },
+  ({ portal }) => {
+    const filtreText = portal ? ` al portal ${portal}` : "";
+    return {
+      messages: [{
+        role: "user" as const,
+        content: {
+          type: "text" as const,
+          text: `Mostra els datasets de dades obertes de Catalunya actualitzats més recentment${filtreText}.\n\n`
+            + "1. Usa list_portals per veure els portals disponibles\n"
+            + `2. Usa search_datasets amb termes generals${portal ? ` i portal '${portal}'` : ""} per obtenir datasets\n`
+            + "3. Per als primers 10 resultats, usa get_dataset_info per veure la data d'última actualització (last_updated)\n"
+            + "4. Ordena per data d'actualització (més recent primer)\n"
+            + "5. Presenta una taula amb: nom, portal, categoria, última actualització, formats\n"
+            + "6. Destaca els que s'han actualitzat en els últims 7 dies\n\n"
+            + "L'objectiu és descobrir quines dades es mantenen actives i actualitzades.",
+        },
+      }],
+    };
+  },
+);
+
+server.prompt(
+  "datasets_populars",
+  "Mostra els datasets més consultats pels usuaris del MCP.",
+  () => ({
+    messages: [{
+      role: "user" as const,
+      content: {
+        type: "text" as const,
+        text: "Mostra els datasets de dades obertes de Catalunya més consultats pels usuaris.\n\n"
+          + "1. Usa search_datasets amb termes populars: 'embassament', 'qualitat aire', 'transport', 'pressupost', 'població'\n"
+          + "2. Per cada cerca, agafa el primer resultat i usa get_dataset_info per obtenir detalls\n"
+          + "3. Presenta un rànquing dels datasets més rellevants amb:\n"
+          + "   - Nom i portal\n"
+          + "   - Descripció breu\n"
+          + "   - Camps disponibles\n"
+          + "   - Última actualització\n"
+          + "4. Per al top 3, fes una consulta amb query_dataset (limit: 3) per mostrar una mostra de dades reals\n"
+          + "5. Suggereix preguntes interessants que es podrien fer a cada dataset\n\n"
+          + "L'objectiu és inspirar l'usuari amb les possibilitats de les dades obertes.",
+      },
+    }],
+  }),
+);
+
+server.prompt(
+  "explorar_portal",
+  "Explora un portal de dades obertes: quants datasets té, categories, exemples de cada tipus.",
+  { portal: z.string().describe("Portal a explorar: generalitat, barcelona, diba, aoc, reus, girona, fgc") },
+  ({ portal }) => ({
+    messages: [{
+      role: "user" as const,
+      content: {
+        type: "text" as const,
+        text: `Fes una exploració completa del portal de dades obertes '${portal}'.\n\n`
+          + "1. Usa list_portals per obtenir el nombre total de datasets\n"
+          + "2. Usa list_categories per veure les categories disponibles al portal\n"
+          + `3. Usa search_datasets amb portal '${portal}' i limit 50 per veure tots els datasets\n`
+          + "4. Agrupa-los per categoria i presenta una taula resum\n"
+          + "5. Per a cada categoria, tria el dataset més interessant i usa get_dataset_info per mostrar-ne els camps\n"
+          + "6. Destaca:\n"
+          + "   - Datasets amb dades en temps real o actualització freqüent\n"
+          + "   - Datasets amb molts camps (rics en dades)\n"
+          + "   - Datasets únics que no es troben a altres portals\n\n"
+          + "Presenta el portal com una guia completa per a un nou usuari.",
+      },
+    }],
+  }),
+);
+
+server.prompt(
+  "dades_municipi",
+  "Descobreix totes les dades obertes disponibles sobre un municipi concret de Catalunya.",
+  { municipi: z.string().describe("Nom del municipi (ex: 'Sabadell', 'Girona', 'Manresa')") },
+  ({ municipi }) => ({
+    messages: [{
+      role: "user" as const,
+      content: {
+        type: "text" as const,
+        text: `Descobreix totes les dades obertes disponibles sobre el municipi de ${municipi}.\n\n`
+          + `1. Usa search_datasets amb '${municipi}' (limit: 50) per trobar tots els datasets\n`
+          + "2. Agrupa per portal i categoria\n"
+          + "3. Per als datasets més rellevants, usa get_dataset_info per veure detalls\n"
+          + "4. Fes query_dataset (limit: 3) als 2-3 datasets més interessants per mostrar dades reals\n"
+          + "5. Usa related_datasets per trobar dades complementàries d'altres portals\n"
+          + "6. Presenta un resum en format fitxa municipal:\n"
+          + "   - Població (si hi ha dades)\n"
+          + "   - Pressupost (si hi ha dades)\n"
+          + "   - Equipaments, transport, medi ambient...\n"
+          + `   - Què falta: quins temes no tenen dades obertes\n\n`
+          + `L'objectiu és donar un retrat complet de ${municipi} a través de les dades obertes.`,
+      },
+    }],
+  }),
+);
+
+server.prompt(
+  "datasets_temps_real",
+  "Llista els datasets que ofereixen dades en temps real o actualització freqüent.",
+  () => ({
+    messages: [{
+      role: "user" as const,
+      content: {
+        type: "text" as const,
+        text: "Descobreix quins datasets de dades obertes de Catalunya ofereixen dades en temps real o actualització molt freqüent.\n\n"
+          + "1. Usa search_datasets amb termes com 'temps real', 'GTFS', 'realtime' per trobar datasets en viu\n"
+          + "2. Usa search_datasets amb portal 'fgc' per trobar dades de transport en temps real\n"
+          + "3. Usa search_datasets amb 'qualitat aire estacions' per trobar mesures en directe\n"
+          + "4. Usa search_datasets amb 'embassament' i 'cabal' per trobar dades hídriques en viu\n"
+          + "5. Per cada dataset trobat, usa get_dataset_info per verificar la freqüència d'actualització\n"
+          + "6. Presenta una llista organitzada per tema:\n"
+          + "   - Transport: trens FGC, trànsit, bicing...\n"
+          + "   - Medi ambient: aire, aigua, meteorologia...\n"
+          + "   - Altres en temps real\n"
+          + "7. Per als 3 més interessants, fes query_dataset per mostrar les últimes dades\n\n"
+          + "L'objectiu és que l'usuari sàpiga quines dades pot consultar 'ara mateix'.",
+      },
+    }],
+  }),
+);
+
+server.prompt(
+  "resum_portals",
+  "Resum general de tots els portals: quants datasets, quins temes, quins formats.",
+  () => ({
+    messages: [{
+      role: "user" as const,
+      content: {
+        type: "text" as const,
+        text: "Fes un resum complet de tots els portals de dades obertes de Catalunya.\n\n"
+          + "1. Usa list_portals per obtenir la llista amb comptadors\n"
+          + "2. Usa list_categories per veure les categories de cada portal\n"
+          + "3. Presenta una taula comparativa:\n"
+          + "   - Nom del portal, URL, nombre de datasets\n"
+          + "   - Tipus d'API (Socrata, CKAN, REST, Opendatasoft)\n"
+          + "   - Categories principals\n"
+          + "   - Tipus de dades destacades\n"
+          + "4. Per cada portal, destaca el dataset més singular o interessant\n"
+          + "5. Indica quins portals tenen dades en temps real\n"
+          + "6. Suggereix per a cada portal una pregunta interessant que es podria respondre amb les seves dades\n\n"
+          + "L'objectiu és donar una visió panoràmica de l'ecosistema de dades obertes català.",
+      },
+    }],
+  }),
+);
+
 async function main() {
   const mode = process.argv.includes("--http") ? "http" : "stdio";
   const port = parseInt(process.env.MCP_PORT || "3100", 10);
@@ -427,7 +579,7 @@ async function main() {
       // Health check
       if (req.url === "/health") {
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.0.11" }));
+        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.0.12" }));
         return;
       }
 

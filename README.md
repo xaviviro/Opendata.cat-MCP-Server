@@ -154,6 +154,12 @@ Prompts predefinits que guien l'LLM pas a pas per fer analisis completes:
 | `compara_municipis` | Compara dos municipis en totes les dades disponibles | `municipi_a`, `municipi_b` |
 | `descobreix_dades` | Mapa complet de dades obertes sobre un tema | `tema` |
 | `analisi_bombers` | Actuacions dels Bombers: emergencies, distribucio, tendencies | `comarca` (opcional) |
+| `novetats` | Datasets actualitzats mes recentment | `portal` (opcional) |
+| `datasets_populars` | Datasets mes consultats pels usuaris | — |
+| `explorar_portal` | Guia completa d'un portal: categories, exemples, destacats | `portal` |
+| `dades_municipi` | Fitxa completa d'un municipi amb totes les dades disponibles | `municipi` |
+| `datasets_temps_real` | Datasets amb dades en temps real o actualitzacio frequent | — |
+| `resum_portals` | Visio panoramica de tots els portals de dades obertes | — |
 
 ## Exemples d'us
 
@@ -167,6 +173,12 @@ Un cop configurat, pots fer preguntes al teu LLM com:
 - *"Quines dades obertes hi ha sobre educacio a Catalunya?"* → prompt `descobreix_dades`
 - *"Dona'm les ultimes dades de pressupostos de Reus"* → prompt `pressupostos_municipals`
 - *"Analitza les actuacions dels Bombers al Valles"* → prompt `analisi_bombers`
+- *"Quines novetats hi ha en dades obertes?"* → prompt `novetats`
+- *"Quins son els datasets mes consultats?"* → prompt `datasets_populars`
+- *"Explora'm el portal de la Generalitat"* → prompt `explorar_portal`
+- *"Quines dades obertes te Sabadell?"* → prompt `dades_municipi`
+- *"Quines dades en temps real hi ha?"* → prompt `datasets_temps_real`
+- *"Dona'm un resum de tots els portals"* → prompt `resum_portals`
 
 ## Com funciona
 
@@ -194,8 +206,9 @@ Les contribucions son benvingudes! Per afegir un nou portal de dades obertes:
 
 ## Changelog
 
-### v0.0.11 (2026-04-13)
-- 8 prompts predefinits: embassaments, trens FGC temps real, qualitat aire, accidents, pressupostos, compara municipis, descobreix dades, bombers
+### v0.0.12 (2026-04-13)
+- 14 prompts predefinits (8 analisi + 6 descobriment)
+- Nous prompts: novetats, datasets_populars, explorar_portal, dades_municipi, datasets_temps_real, resum_portals
 - Crawler incremental: UPSERT en lloc de TRUNCATE, no perd dades si un portal falla
 - Backup automatic despres de cada carrega
 
