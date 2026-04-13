@@ -10,7 +10,7 @@ import { queryDiba } from "./clients/diba.js";
 
 const server = new McpServer({
   name: "opendata-cat",
-  version: "0.0.4",
+  version: "0.0.5",
 });
 
 // Tool 1: search_datasets
