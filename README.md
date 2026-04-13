@@ -18,16 +18,18 @@ Un projecte d'**[opendata.cat](https://opendata.cat)** — associacio sense anim
 
 ## Portals disponibles
 
-| Portal | Datasets | Queryables | APIs |
-|--------|----------|-----------|------|
-| [Generalitat de Catalunya](https://analisi.transparenciacatalunya.cat) | 1.058 | 1.058 | Socrata (SoQL) |
-| [Ajuntament de Barcelona](https://opendata-ajuntament.barcelona.cat) | 555 | 463 | CKAN datastore |
-| [Diputacio de Barcelona](https://dadesobertes.diba.cat) | 90 | 32 | REST + JSON:API (CIDO) |
-| [Consorci AOC](https://dadesobertes.seu-e.cat) | ~893 | ~893 | CKAN datastore |
+| Portal | Datasets | APIs |
+|--------|----------|------|
+| [Generalitat de Catalunya](https://analisi.transparenciacatalunya.cat) | 1.058 | Socrata (SoQL) |
+| [Ajuntament de Barcelona](https://opendata-ajuntament.barcelona.cat) | 555 | CKAN datastore |
+| [Diputacio de Barcelona](https://dadesobertes.diba.cat) | 90 | REST + JSON:API (CIDO) |
+| [Consorci AOC](https://dadesobertes.seu-e.cat) | ~893 | CKAN datastore |
+| [Ajuntament de Reus](https://opendata.reus.cat) | 119 | CKAN datastore |
+| [Ajuntament de Girona](https://www.girona.cat/opendata/) | 53 | CKAN datastore |
 
 El Consorci AOC inclou datasets de les **diputacions de Tarragona, Girona i Lleida**, ajuntaments, consells comarcals i altres organismes publics catalans.
 
-**~2.400 datasets queryables** amb filtres, cerca i paginacio. La resta ofereix descarrega directa de fitxers.
+**+2.700 datasets** de 6 portals. La majoria queryables amb filtres, cerca i paginacio.
 
 El cataleg s'actualitza automaticament cada setmana. Cada endpoint es valida per assegurar que funciona.
 
