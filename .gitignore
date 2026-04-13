@@ -2,3 +2,5 @@ node_modules/
 dist/
 *.tgz
 .npmrc
+.mcpregistry_*
+server.log

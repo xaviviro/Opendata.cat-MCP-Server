@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 
+import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { z } from "zod";
 import { searchDatasets, getDatasetInfo, getCategories } from "./api.js";
 import { querySocrata } from "./clients/socrata.js";
@@ -11,7 +13,7 @@ import { queryCido } from "./clients/cido.js";
 
 const server = new McpServer({
   name: "opendata-cat",
-  version: "0.0.7",
+  version: "0.0.8",
 });
 
 // Tool 1: search_datasets
@@ -172,8 +174,44 @@ server.tool(
 );
 
 async function main() {
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
+  const mode = process.argv.includes("--http") ? "http" : "stdio";
+  const port = parseInt(process.env.MCP_PORT || "3100", 10);
+
+  if (mode === "http") {
+    const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
+    const httpServer = createServer(async (req: IncomingMessage, res: ServerResponse) => {
+      // CORS
+      res.setHeader("Access-Control-Allow-Origin", "*");
+      res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+      res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+      if (req.method === "OPTIONS") { res.writeHead(204); res.end(); return; }
+
+      // Health check
+      if (req.url === "/health") {
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.0.8" }));
+        return;
+      }
+
+      // MCP endpoint
+      if (req.url === "/mcp") {
+        await transport.handleRequest(req, res);
+        return;
+      }
+
+      res.writeHead(404);
+      res.end("Not found");
+    });
+
+    await server.connect(transport);
+    httpServer.listen(port, () => {
+      console.log(`MCP HTTP server running on port ${port}`);
+    });
+  } else {
+    const transport = new StdioServerTransport();
+    await server.connect(transport);
+  }
 }
 
 main().catch(console.error);
