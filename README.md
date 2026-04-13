@@ -17,18 +17,23 @@ Un projecte d'**[opendata.cat](https://opendata.cat)** — associacio sense anim
 
 ## Portals disponibles
 
-| Portal | Datasets | Queryables | API | Dades |
-|--------|----------|-----------|-----|-------|
-| [Generalitat de Catalunya](https://analisi.transparenciacatalunya.cat) | 1.058 | 1.058 | Socrata | Medi ambient, salut, educacio, economia, transport... |
-| [Ajuntament de Barcelona](https://opendata-ajuntament.barcelona.cat) | 555 | ~464 | CKAN | Urbanisme, mobilitat, cultura, demografia, pressupostos... |
-| [Diputacio de Barcelona](https://dadesobertes.diba.cat) | 90 | ~29 | REST | Municipis, equipaments, patrimoni, energia, territori... |
+| Portal | Datasets | Queryables | APIs |
+|--------|----------|-----------|------|
+| [Generalitat de Catalunya](https://analisi.transparenciacatalunya.cat) | 1.058 | 1.058 | Socrata (SoQL) |
+| [Ajuntament de Barcelona](https://opendata-ajuntament.barcelona.cat) | 555 | 463 | CKAN datastore |
+| [Diputacio de Barcelona](https://dadesobertes.diba.cat) | 90 | 32 | REST + JSON:API (CIDO) |
+
+**1.553 datasets queryables** amb filtres, cerca i paginacio. La resta ofereix descarrega directa de fitxers.
 
 El cataleg s'actualitza automaticament cada setmana. Cada endpoint es valida per assegurar que funciona.
 
 **Tipus d'acces:**
-- **Queryable** (socrata, ckan, diba): consulta amb filtres, cerca i paginacio directa
+- **Socrata**: consulta SoQL amb filtres i cerca (Generalitat)
+- **CKAN**: datastore_search amb filtres i cerca (Barcelona)
+- **Diba REST**: API do.diba.cat amb paginacio i filtres (Diputacio)
+- **CIDO JSON:API**: api.diba.cat per contractacions, normatives, subvencions, oposicions, convenis (Diputacio)
 - **File download**: descarrega directa de CSV, JSON, XLSX o fitxers GIS
-- **Restricted**: requereix token d'autenticacio
+- **Restricted**: requereix token d'autenticacio (4 datasets BSM)
 
 ## Installacio rapida
 
