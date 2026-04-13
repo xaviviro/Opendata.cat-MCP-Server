@@ -1,0 +1,33 @@
+{
+  "$schema": "https://pulsemcp.com/api/schema",
+  "name": "io.github.xaviviro/opendata-cat",
+  "description": "MCP server that connects LLMs with 2,500+ open data datasets from Catalonia. Covers the Generalitat de Catalunya, Barcelona City Council, Barcelona Provincial Council (Diputació), and the AOC Consortium (provincial councils of Tarragona, Girona, Lleida, municipalities, and county councils). Supports Socrata, CKAN, REST and CIDO APIs. Inspired by the French government's datagouv-mcp.",
+  "repository": {
+    "url": "https://github.com/xaviviro/Opendata.cat-MCP-Server",
+    "source": "github"
+  },
+  "version_detail": {
+    "version": "0.0.7",
+    "release_date": "2026-04-13",
+    "is_latest": true
+  },
+  "packages": [
+    {
+      "registry_type": "npm",
+      "name": "@opendata.cat/mcp-server",
+      "version": "0.0.7",
+      "runtime": "node",
+      "transport": [
+        {
+          "type": "stdio"
+        }
+      ]
+    }
+  ],
+  "remotes": [
+    {
+      "transport_type": "streamable-http",
+      "url": "https://opendata.cat/api/mcp"
+    }
+  ]
+}

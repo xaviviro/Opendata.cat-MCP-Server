@@ -25,6 +25,7 @@
   ],
   "author": "opendata.cat",
   "license": "MIT",
+  "mcpName": "io.github.xaviviro/opendata-cat",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/xaviviro/Opendata.cat-MCP-Server.git"
