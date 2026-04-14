@@ -116,6 +116,26 @@ server.tool(
         results = data.records;
       } else if (dataset.api_type === "opendatasoft") {
         const data = await queryOpendatasoft(dataset.api_endpoint, filters, search, limit, offset);
+        // Detect GTFS-RT protobuf files
+        const first = data.records[0] as Record<string, unknown> | undefined;
+        const fileField = first?.file as { filename?: string } | undefined;
+        if (fileField?.filename?.endsWith(".pb") || fileField?.filename?.endsWith(".pbf")) {
+          const dsMatch = dataset.api_endpoint.match(/dataset=([^&]+)/);
+          const baseMatch = dataset.api_endpoint.match(/(https?:\/\/[^/]+)/);
+          const infoUrl = baseMatch ? `${baseMatch[1]}/explore/dataset/${dsMatch?.[1] ?? ""}/information/` : dataset.api_endpoint;
+          return {
+            content: [{
+              type: "text" as const,
+              text: JSON.stringify({
+                dataset: dataset.name,
+                format: "Protocol Buffers (GTFS-RT)",
+                message: "Aquest dataset conté dades en format Protocol Buffers (.pb), un format binari per a transport públic en temps real (GTFS Realtime). No es pot llegir directament com a text/JSON. Per usar-lo cal un decoder GTFS-RT (ex: gtfs-realtime-bindings).",
+                filename: fileField.filename,
+                download_url: infoUrl,
+              }, null, 2),
+            }],
+          };
+        }
         results = data.records;
       } else {
         return {
