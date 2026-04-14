@@ -193,6 +193,24 @@ Usuari → LLM → MCP opendata.cat → API opendata.cat (cataleg)
 
 No emmagatzema ni fa de proxy de dades. Cada consulta va directament a la font oficial.
 
+## API REST
+
+A mes del servidor MCP, opendata.cat ofereix una API REST publica per accedir al cataleg de datasets:
+
+| Endpoint | Descripcio |
+|----------|-----------|
+| `GET /api/datasets.php?q=...` | Cerca datasets per text lliure |
+| `GET /api/dataset.php?id=...` | Detall complet d'un dataset |
+| `GET /api/categories.php` | Categories i portals amb comptadors |
+| `GET /api/portals.php` | Portals de transparencia (1.769) |
+| `GET /api/stats.php` | Estadistiques agregades |
+| `GET /api/mcp-stats.php` | Metriques d'us del MCP |
+| `POST /api/mcp` | Servidor MCP (Streamable HTTP) |
+
+Documentacio interactiva (Swagger): **[opendata.cat/api/docs.html](https://opendata.cat/api/docs.html)**
+
+Especificacio OpenAPI: [`opendata.cat/api/openapi.json`](https://opendata.cat/api/openapi.json)
+
 ## Sobre opendata.cat
 
 [opendata.cat](https://opendata.cat) es una associacio catalana sense anim de lucre fundada el 2012 (registre 47468) dedicada a promoure la transparencia i l'acces a la informacio publica. Treballa en tres eixos: **estandarditzacio** de formats i protocols, **formacio** especialitzada per a professionals i administracions, i **collaboracio** publico-privada per a l'obertura de dades.
