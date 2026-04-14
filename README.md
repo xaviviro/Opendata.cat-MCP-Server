@@ -27,10 +27,11 @@ Un projecte d'**[opendata.cat](https://opendata.cat)** — associacio sense anim
 | [Ajuntament de Reus](https://opendata.reus.cat) | 119 | CKAN datastore |
 | [Ajuntament de Girona](https://www.girona.cat/opendata/) | 53 | CKAN datastore |
 | [FGC (Ferrocarrils)](https://dadesobertes.fgc.cat) | 50 | Opendatasoft |
+| [Idescat](https://www.idescat.cat) | 138 | Idescat API |
 
-El Consorci AOC inclou datasets de les **diputacions de Tarragona, Girona i Lleida**, ajuntaments, consells comarcals i altres organismes publics catalans.
+El Consorci AOC inclou datasets de les **diputacions de Tarragona, Girona i Lleida**, ajuntaments, consells comarcals i altres organismes publics catalans. Idescat proporciona indicadors estadistics de Catalunya (poblacio, economia, treball, salut...) amb series temporals.
 
-**+2.800 datasets** de 7 portals. La majoria queryables amb filtres, cerca i paginacio.
+**+2.800 datasets** de 8 portals. La majoria queryables amb filtres, cerca i paginacio.
 
 El cataleg s'actualitza automaticament cada setmana. Cada endpoint es valida per assegurar que funciona.
 
@@ -40,6 +41,7 @@ El cataleg s'actualitza automaticament cada setmana. Cada endpoint es valida per
 - **Diba REST**: API do.diba.cat amb paginacio i filtres (Diputacio BCN)
 - **CIDO JSON:API**: api.diba.cat per contractacions, normatives, subvencions, oposicions, convenis (Diputacio BCN)
 - **Opendatasoft**: API records amb filtres i cerca (FGC — horaris GTFS, trens temps real, estacions esqui)
+- **Idescat**: indicadors estadistics amb series temporals (poblacio, economia, treball, salut, educacio)
 - **File download**: descarrega directa de CSV, JSON, XLSX o fitxers GIS
 - **Restricted**: requereix token d'autenticacio (4 datasets BSM)
 
@@ -223,6 +225,13 @@ Les contribucions son benvingudes! Per afegir un nou portal de dades obertes:
 2. O envia un pull request
 
 ## Changelog
+
+### v0.1.0 (2026-04-14)
+- Nou portal Idescat (Institut d'Estadistica de Catalunya) — 138 indicadors estadistics
+- Client Idescat amb series temporals (poblacio, PIB, atur, inflacio, educacio, salut...)
+- Millora ranking de cerca: datasets amb el terme al nom surten primer
+- Instruccio multi-cerca a search_datasets per cobrir temes amplis
+- Sinonims ampliats: emergencies (112, SEM, ambulancia, bombers, mossos)
 
 ### v0.0.17 (2026-04-14)
 - Simplificacio automatica de geometries GIS: centroide + bounding box en lloc de milers de coordenades

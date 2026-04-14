@@ -12,10 +12,11 @@ import { queryDiba } from "./clients/diba.js";
 import { queryCido } from "./clients/cido.js";
 import { queryOpendatasoft } from "./clients/opendatasoft.js";
 import { decodeGtfsRt } from "./clients/gtfsrt.js";
+import { queryIdescat } from "./clients/idescat.js";
 
 const server = new McpServer({
   name: "opendata-cat",
-  version: "0.0.19",
+  version: "0.1.0",
 });
 
 // Tool 1: search_datasets
@@ -24,7 +25,7 @@ server.tool(
   "Cerca datasets de dades obertes catalanes per text lliure. IMPORTANT: fes múltiples cerques amb termes diferents per cobrir un tema ampli. Ex: si l'usuari pregunta per 'emergències', cerca 'bombers', '112 trucades', 'mossos policia', 'SEM ambulància' per separat. La cerca inclou sinònims en català i castellà.",
   {
     query: z.string().describe("Text de cerca (ex: 'qualitat aire', 'pressupostos')"),
-    portal: z.string().optional().describe("Filtrar per portal: 'generalitat', 'barcelona', 'diba', 'aoc', 'reus', 'girona', 'fgc'"),
+    portal: z.string().optional().describe("Filtrar per portal: 'generalitat', 'barcelona', 'diba', 'aoc', 'reus', 'girona', 'fgc', 'idescat'"),
     category: z.string().optional().describe("Filtrar per categoria"),
     limit: z.number().optional().default(20).describe("Nombre màxim de resultats (defecte: 20)"),
   },
@@ -137,6 +138,19 @@ server.tool(
           };
         }
         results = data.records;
+      } else if (dataset.api_type === "idescat") {
+        const data = await queryIdescat(dataset.api_endpoint);
+        return {
+          content: [{
+            type: "text" as const,
+            text: JSON.stringify({
+              dataset: dataset.name,
+              portal: "Idescat",
+              count: data.count,
+              data: data.indicators,
+            }, null, 2),
+          }],
+        };
       } else {
         return {
           content: [{
@@ -177,6 +191,7 @@ server.tool(
       { id: "reus", name: "Ajuntament de Reus", url: "https://opendata.reus.cat", api: "CKAN" },
       { id: "girona", name: "Ajuntament de Girona", url: "https://www.girona.cat/opendata/", api: "CKAN" },
       { id: "fgc", name: "Ferrocarrils de la Generalitat de Catalunya", url: "https://dadesobertes.fgc.cat", api: "Opendatasoft" },
+      { id: "idescat", name: "Idescat (Institut d'Estadística de Catalunya)", url: "https://www.idescat.cat", api: "Idescat API" },
     ];
 
     const cats = await getCategories();
@@ -599,7 +614,7 @@ async function main() {
       // Health check
       if (req.url === "/health") {
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.0.19" }));
+        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.1.0" }));
         return;
       }
 
