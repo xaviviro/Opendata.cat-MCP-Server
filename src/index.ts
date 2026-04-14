@@ -14,15 +14,42 @@ import { queryOpendatasoft } from "./clients/opendatasoft.js";
 import { decodeGtfsRt } from "./clients/gtfsrt.js";
 import { queryIdescat } from "./clients/idescat.js";
 
-const server = new McpServer({
-  name: "opendata-cat",
-  version: "0.1.0",
-});
+const INSTRUCTIONS = `Servidor MCP de dades obertes de Catalunya. Pots consultar dades reals directament amb query_dataset si coneixes el dataset_id.
+
+DATASETS DESTACATS (pots fer query_dataset directament sense cercar):
+- generalitat:gn9e-3qhr → Embassaments: volum, % ple, per estació
+- generalitat:i5n8-43cw → Estat de sequera per municipi
+- generalitat:rmgc-ncpb → Accidents de trànsit amb morts o ferits greus
+- generalitat:jq8m-d7cw → Incidents operatius gestionats pel CAT 112
+- generalitat:mfqb-sbx4 → Trucades operatives gestionades pel CAT 112
+- generalitat:g2ay-3vnj → Actuacions dels Bombers de la Generalitat
+- generalitat:j6ii-t3w2 → Certificats d'eficiència energètica d'edificis
+- fgc:vehicle-positions-gtfs_realtime → Posició GPS dels trens FGC en temps real
+- fgc:alerts-gtfs_realtime → Alertes de servei FGC en temps real
+- fgc:trip-updates-gtfs_realtime → Retards dels trens FGC en temps real
+- idescat:m10328 → Població de Catalunya
+- idescat:m10234 → Confiança empresarial
+- barcelona:accidents-gu-bcn → Accidents gestionats per la Guàrdia Urbana BCN
+
+DADES MUNICIPALS (filtra per NOM_ENS amb query_dataset):
+- aoc:ge-ge-cost-efectiu-serveis-minhap → Cost dels serveis de +1.000 municipis
+- aoc:ge-p-pressupostos-i-plantilles → Pressupostos i plantilles municipals
+- aoc:ge-ge-endeutament → Endeutament municipal
+- aoc:ge-p-liquidacions-per-programes-detallat → Liquidació pressupostos per programes
+- aoc:ge-ge-termini-pagament-proveidors → Termini pagament a proveïdors
+
+PORTALS: generalitat (Socrata), barcelona (CKAN), diba (REST), aoc (CKAN), reus (CKAN), girona (CKAN), fgc (Opendatasoft+GTFS-RT), idescat (API indicadors)
+Usa search_datasets per temes que no siguin als destacats. Fes múltiples cerques amb termes diferents per cobrir temes amplis.`;
+
+const server = new McpServer(
+  { name: "opendata-cat", version: "0.1.1" },
+  { instructions: INSTRUCTIONS },
+);
 
 // Tool 1: search_datasets
 server.tool(
   "search_datasets",
-  "Cerca datasets de dades obertes catalanes per text lliure. IMPORTANT: fes múltiples cerques amb termes diferents per cobrir un tema ampli. Ex: si l'usuari pregunta per 'emergències', cerca 'bombers', '112 trucades', 'mossos policia', 'SEM ambulància' per separat. La cerca inclou sinònims en català i castellà.",
+  "Cerca datasets per text lliure. Mira primer les instructions del servidor: molts datasets es poden consultar directament amb query_dataset sense cercar. Usa search_datasets només quan no saps quin dataset necessites.",
   {
     query: z.string().describe("Text de cerca (ex: 'qualitat aire', 'pressupostos')"),
     portal: z.string().optional().describe("Filtrar per portal: 'generalitat', 'barcelona', 'diba', 'aoc', 'reus', 'girona', 'fgc', 'idescat'"),
@@ -31,10 +58,18 @@ server.tool(
   },
   async ({ query, portal, category, limit }) => {
     const result = await searchDatasets(query, portal, category, limit);
+    const queryableTypes = new Set(["socrata", "ckan", "opendatasoft", "idescat", "diba", "diba_cido"]);
+    const enriched = {
+      ...result,
+      items: result.items.map((item) => ({
+        ...item,
+        queryable: queryableTypes.has(item.api_type),
+      })),
+    };
     return {
       content: [{
         type: "text" as const,
-        text: JSON.stringify(result, null, 2),
+        text: JSON.stringify(enriched, null, 2),
       }],
     };
   },
@@ -75,9 +110,9 @@ server.tool(
 // Tool 4: query_dataset
 server.tool(
   "query_dataset",
-  "Executa una consulta contra un dataset i retorna files de dades reals del portal origen.",
+  "Consulta dades reals d'un dataset. Mira les instructions per dataset_ids destacats. Per dades municipals, usa filters: {\"NOM_ENS\": \"Ajuntament de X\"} amb els datasets aoc:ge-*.",
   {
-    dataset_id: z.string().describe("ID del dataset a consultar"),
+    dataset_id: z.string().describe("ID del dataset (ex: 'generalitat:gn9e-3qhr' per embassaments, 'aoc:ge-ge-cost-efectiu-serveis-minhap' per cost serveis municipal)"),
     filters: z.record(z.string(), z.string()).optional().describe("Filtres clau-valor (ex: {\"ciutat\": \"Barcelona\"})"),
     search: z.string().optional().describe("Cerca de text lliure dins el dataset"),
     limit: z.number().optional().default(20).describe("Files a retornar (defecte: 20, màxim: 100)"),
@@ -614,7 +649,7 @@ async function main() {
       // Health check
       if (req.url === "/health") {
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.1.0" }));
+        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.1.1" }));
         return;
       }
 
