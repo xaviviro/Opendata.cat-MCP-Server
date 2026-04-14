@@ -11,6 +11,7 @@ import { queryCkan } from "./clients/ckan.js";
 import { queryDiba } from "./clients/diba.js";
 import { queryCido } from "./clients/cido.js";
 import { queryOpendatasoft } from "./clients/opendatasoft.js";
+import { decodeGtfsRt } from "./clients/gtfsrt.js";
 
 const server = new McpServer({
   name: "opendata-cat",
@@ -116,22 +117,21 @@ server.tool(
         results = data.records;
       } else if (dataset.api_type === "opendatasoft") {
         const data = await queryOpendatasoft(dataset.api_endpoint, filters, search, limit, offset);
-        // Detect GTFS-RT protobuf files
+        // Detect and decode GTFS-RT protobuf files
         const first = data.records[0] as Record<string, unknown> | undefined;
         const fileField = first?.file as { filename?: string } | undefined;
         if (fileField?.filename?.endsWith(".pb") || fileField?.filename?.endsWith(".pbf")) {
-          const dsMatch = dataset.api_endpoint.match(/dataset=([^&]+)/);
-          const baseMatch = dataset.api_endpoint.match(/(https?:\/\/[^/]+)/);
-          const infoUrl = baseMatch ? `${baseMatch[1]}/explore/dataset/${dsMatch?.[1] ?? ""}/information/` : dataset.api_endpoint;
+          const decoded = await decodeGtfsRt(dataset.api_endpoint, limit);
           return {
             content: [{
               type: "text" as const,
               text: JSON.stringify({
                 dataset: dataset.name,
-                format: "Protocol Buffers (GTFS-RT)",
-                message: "Aquest dataset conté dades en format Protocol Buffers (.pb), un format binari per a transport públic en temps real (GTFS Realtime). No es pot llegir directament com a text/JSON. Per usar-lo cal un decoder GTFS-RT (ex: gtfs-realtime-bindings).",
-                filename: fileField.filename,
-                download_url: infoUrl,
+                format: "GTFS Realtime",
+                type: decoded.type,
+                total_entities: decoded.count,
+                count: decoded.data.length,
+                data: decoded.data,
               }, null, 2),
             }],
           };
