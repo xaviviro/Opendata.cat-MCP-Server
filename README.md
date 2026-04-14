@@ -224,6 +224,13 @@ Les contribucions son benvingudes! Per afegir un nou portal de dades obertes:
 
 ## Changelog
 
+### v0.0.13 (2026-04-14)
+- Decodificador GTFS-RT integrat: trens FGC en temps real ara retornen dades reals (retards, alertes, posicions GPS)
+- Descodifica automaticament fitxers Protocol Buffers (.pb) de GTFS Realtime
+- API REST documentada amb Swagger UI a /api/docs.html (OpenAPI 3.1)
+- Instruccions per a models locals: LM Studio, Ollama (MCPHost) i Jan
+- Recomanacions de models oberts en catala (Softcatala): Qwen 3.5 9B, Gemma 3 12B
+
 ### v0.0.12 (2026-04-13)
 - 14 prompts predefinits (8 analisi + 6 descobriment)
 - Nous prompts: novetats, datasets_populars, explorar_portal, dades_municipi, datasets_temps_real, resum_portals

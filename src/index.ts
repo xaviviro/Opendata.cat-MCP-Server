@@ -15,7 +15,7 @@ import { decodeGtfsRt } from "./clients/gtfsrt.js";
 
 const server = new McpServer({
   name: "opendata-cat",
-  version: "0.0.12",
+  version: "0.0.13",
 });
 
 // Tool 1: search_datasets
@@ -599,7 +599,7 @@ async function main() {
       // Health check
       if (req.url === "/health") {
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.0.12" }));
+        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.0.13" }));
         return;
       }
 
