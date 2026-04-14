@@ -224,7 +224,7 @@ Les contribucions son benvingudes! Per afegir un nou portal de dades obertes:
 
 ## Changelog
 
-### v0.0.13 (2026-04-14)
+### v0.0.16 (2026-04-14)
 - Decodificador GTFS-RT integrat: trens FGC en temps real ara retornen dades reals (retards, alertes, posicions GPS)
 - Descodifica automaticament fitxers Protocol Buffers (.pb) de GTFS Realtime
 - API REST documentada amb Swagger UI a /api/docs.html (OpenAPI 3.1)

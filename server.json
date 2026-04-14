@@ -1,14 +1,14 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.xaviviro/opendata-cat",
-  "version": "0.0.13",
+  "version": "0.0.16",
   "description": "Connect LLMs with 2,500+ open data datasets from Catalonia (Socrata, CKAN, REST).",
   "repository": {
     "url": "https://github.com/xaviviro/Opendata.cat-MCP-Server",
     "source": "github"
   },
   "version_detail": {
-    "version": "0.0.13",
+    "version": "0.0.16",
     "release_date": "2026-04-13",
     "is_latest": true
   },
@@ -16,7 +16,7 @@
     {
       "registryType": "npm",
       "identifier": "@opendata.cat/mcp-server",
-      "version": "0.0.13",
+      "version": "0.0.16",
       "runtime": "node",
       "transport": {
         "type": "stdio"
