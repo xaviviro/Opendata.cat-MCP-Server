@@ -17,7 +17,7 @@ import { queryIdescat } from "./clients/idescat.js";
 const INSTRUCTIONS = `Servidor MCP de dades obertes de Catalunya. Pots consultar dades reals directament amb query_dataset si coneixes el dataset_id.
 
 DATASETS DESTACATS (pots fer query_dataset directament sense cercar):
-- generalitat:gn9e-3qhr → Embassaments: volum, % ple, per estació
+- generalitat:gn9e-3qhr → Embassaments: camps dia, estaci, volum_embassat, percentatge_volum_embassat, nivell_absolut
 - generalitat:i5n8-43cw → Estat de sequera per municipi
 - generalitat:rmgc-ncpb → Accidents de trànsit amb morts o ferits greus
 - generalitat:jq8m-d7cw → Incidents operatius gestionats pel CAT 112
@@ -39,10 +39,16 @@ DADES MUNICIPALS (filtra per NOM_ENS amb query_dataset):
 - aoc:ge-ge-termini-pagament-proveidors → Termini pagament a proveïdors
 
 PORTALS: generalitat (Socrata), barcelona (CKAN), diba (REST), aoc (CKAN), reus (CKAN), girona (CKAN), fgc (Opendatasoft+GTFS-RT), idescat (API indicadors)
-Usa search_datasets per temes que no siguin als destacats. Fes múltiples cerques amb termes diferents per cobrir temes amplis.`;
+
+NOTES:
+- Socrata: pots filtrar per qualsevol camp. Ex: filters: {"estaci": "Embassament de Sau"}
+- CKAN AOC municipals: filtra per NOM_ENS (ex: "Ajuntament de Tiana"). Camps sovint en castellà.
+- Idescat: cada dataset_id retorna 1 indicador específic amb valor, unitat, període i sèrie temporal.
+- FGC GTFS-RT: decodificat automàticament. vehicle-positions dona GPS, alerts dona alertes en català.
+- Usa search_datasets només quan no saps quin dataset necessites.`;
 
 const server = new McpServer(
-  { name: "opendata-cat", version: "0.1.1" },
+  { name: "opendata-cat", version: "0.1.2" },
   { instructions: INSTRUCTIONS },
 );
 
@@ -649,7 +655,7 @@ async function main() {
       // Health check
       if (req.url === "/health") {
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.1.1" }));
+        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.1.2" }));
         return;
       }
 
