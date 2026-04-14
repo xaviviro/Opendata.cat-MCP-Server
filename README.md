@@ -142,45 +142,18 @@ Llista els portals disponibles amb el nombre de datasets de cadascun. No requere
 
 Llista totes les categories i temes de datasets disponibles amb comptadors per portal. Ideal per descobrir quins tipus de dades hi ha.
 
-## Prompts disponibles
-
-Prompts predefinits que guien l'LLM pas a pas per fer analisis completes:
-
-| Prompt | Descripcio | Arguments |
-|--------|-----------|-----------|
-| `estat_embassaments` | Estat actual dels embassaments amb grafiques d'evolucio | — |
-| `trens_fgc_temps_real` | Retards, alertes i posicions dels trens FGC en temps real | — |
-| `qualitat_aire` | Analisi de la qualitat de l'aire amb comparativa OMS/UE | `lloc` (opcional) |
-| `accidents_transit` | Analisi d'accidents de transit amb punts negres i tendencies | `municipi` (opcional) |
-| `pressupostos_municipals` | Pressupostos municipals amb desglossament per partides | `municipi` (opcional) |
-| `compara_municipis` | Compara dos municipis en totes les dades disponibles | `municipi_a`, `municipi_b` |
-| `descobreix_dades` | Mapa complet de dades obertes sobre un tema | `tema` |
-| `analisi_bombers` | Actuacions dels Bombers: emergencies, distribucio, tendencies | `comarca` (opcional) |
-| `novetats` | Datasets actualitzats mes recentment | `portal` (opcional) |
-| `datasets_populars` | Datasets mes consultats pels usuaris | — |
-| `explorar_portal` | Guia completa d'un portal: categories, exemples, destacats | `portal` |
-| `dades_municipi` | Fitxa completa d'un municipi amb totes les dades disponibles | `municipi` |
-| `datasets_temps_real` | Datasets amb dades en temps real o actualitzacio frequent | — |
-| `resum_portals` | Visio panoramica de tots els portals de dades obertes | — |
-
 ## Exemples d'us
 
 Un cop configurat, pots fer preguntes al teu LLM com:
 
-- *"Quin es l'estat dels embassaments de Catalunya?"* → prompt `estat_embassaments`
-- *"Hi ha algun tren de FGC amb retard ara mateix?"* → prompt `trens_fgc_temps_real`
-- *"Analitza la qualitat de l'aire a Terrassa"* → prompt `qualitat_aire`
-- *"Fes unes grafiques amb l'evolucio dels accidents de transit a Barcelona"* → prompt `accidents_transit`
-- *"Compara Girona i Tarragona en dades obertes"* → prompt `compara_municipis`
-- *"Quines dades obertes hi ha sobre educacio a Catalunya?"* → prompt `descobreix_dades`
-- *"Dona'm les ultimes dades de pressupostos de Reus"* → prompt `pressupostos_municipals`
-- *"Analitza les actuacions dels Bombers al Valles"* → prompt `analisi_bombers`
-- *"Quines novetats hi ha en dades obertes?"* → prompt `novetats`
-- *"Quins son els datasets mes consultats?"* → prompt `datasets_populars`
-- *"Explora'm el portal de la Generalitat"* → prompt `explorar_portal`
-- *"Quines dades obertes te Sabadell?"* → prompt `dades_municipi`
-- *"Quines dades en temps real hi ha?"* → prompt `datasets_temps_real`
-- *"Dona'm un resum de tots els portals"* → prompt `resum_portals`
+- *"Quin es l'estat dels embassaments de Catalunya?"*
+- *"Hi ha algun tren de FGC amb retard ara mateix?"*
+- *"Quina es la poblacio de Catalunya? I l'atur?"*
+- *"Analitza la qualitat de l'aire a Terrassa"*
+- *"Compara Girona i Tarragona en dades obertes"*
+- *"Quines dades obertes hi ha sobre educacio a Catalunya?"*
+- *"Dona'm les ultimes dades de pressupostos de Reus"*
+- *"Tenim informacio d'actuacions de bombers o del 112?"*
 
 ## Com funciona
 
