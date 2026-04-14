@@ -15,13 +15,13 @@ import { decodeGtfsRt } from "./clients/gtfsrt.js";
 
 const server = new McpServer({
   name: "opendata-cat",
-  version: "0.0.17",
+  version: "0.0.19",
 });
 
 // Tool 1: search_datasets
 server.tool(
   "search_datasets",
-  "Cerca datasets de dades obertes catalanes per text lliure. Retorna nom, descripció, portal i formats.",
+  "Cerca datasets de dades obertes catalanes per text lliure. IMPORTANT: fes múltiples cerques amb termes diferents per cobrir un tema ampli. Ex: si l'usuari pregunta per 'emergències', cerca 'bombers', '112 trucades', 'mossos policia', 'SEM ambulància' per separat. La cerca inclou sinònims en català i castellà.",
   {
     query: z.string().describe("Text de cerca (ex: 'qualitat aire', 'pressupostos')"),
     portal: z.string().optional().describe("Filtrar per portal: 'generalitat', 'barcelona', 'diba', 'aoc', 'reus', 'girona', 'fgc'"),
@@ -599,7 +599,7 @@ async function main() {
       // Health check
       if (req.url === "/health") {
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.0.17" }));
+        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.0.19" }));
         return;
       }
 
