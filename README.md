@@ -12,7 +12,7 @@
 
 # Opendata.cat MCP Server
 
-Servidor [MCP](https://modelcontextprotocol.io/) (Model Context Protocol) que connecta els models de llenguatge (Claude, ChatGPT, Gemini...) amb les **dades obertes publiques de Catalunya**. Cerca datasets, explora metadades i consulta dades reals de 7 portals catalans directament des del teu assistent d'IA.
+Servidor [MCP](https://modelcontextprotocol.io/) (Model Context Protocol) que connecta els models de llenguatge (Claude, ChatGPT, Gemini...) amb les **dades obertes publiques de Catalunya**. Cerca datasets, explora metadades i consulta dades reals de 8 portals catalans directament des del teu assistent d'IA.
 
 Un projecte d'**[opendata.cat](https://opendata.cat)** — associacio sense anim de lucre fundada el 2012 que promou la transparencia, la difusio i l'estandarditzacio de les dades obertes a Catalunya. Inspirat en el projecte [datagouv-mcp](https://github.com/datagouv/datagouv-mcp) del govern frances.
 
@@ -41,9 +41,11 @@ El cataleg s'actualitza automaticament cada setmana. Cada endpoint es valida per
 - **Diba REST**: API do.diba.cat amb paginacio i filtres (Diputacio BCN)
 - **CIDO JSON:API**: api.diba.cat per contractacions, normatives, subvencions, oposicions, convenis (Diputacio BCN)
 - **Opendatasoft**: API records amb filtres i cerca (FGC — horaris GTFS, trens temps real, estacions esqui)
+- **GTFS-RT**: decodificacio automatica de Protocol Buffers — posicions GPS, alertes i retards dels trens FGC en temps real
 - **Idescat**: indicadors estadistics amb series temporals (poblacio, economia, treball, salut, educacio)
-- **File download**: descarrega directa de CSV, JSON, XLSX o fitxers GIS
-- **Restricted**: requereix token d'autenticacio (4 datasets BSM)
+- **GIS**: simplificacio automatica de geometries (centroide + bbox en lloc de milers de coordenades)
+- **Dades municipals AOC**: 9 datasets centralitzats amb dades de +1.000 municipis, filtrables per NOM_ENS
+- **File download**: descarrega directa de CSV, JSON, XLSX
 
 ## Installacio rapida
 
@@ -154,6 +156,8 @@ Un cop configurat, pots fer preguntes al teu LLM com:
 - *"Quines dades obertes hi ha sobre educacio a Catalunya?"*
 - *"Dona'm les ultimes dades de pressupostos de Reus"*
 - *"Tenim informacio d'actuacions de bombers o del 112?"*
+- *"Quin es l'endeutament de Tiana?"*
+- *"Quina es la poblacio de Catalunya?"*
 
 ## Com funciona
 
@@ -199,11 +203,18 @@ Les contribucions son benvingudes! Per afegir un nou portal de dades obertes:
 
 ## Changelog
 
+### v0.1.2 (2026-04-14)
+- Instructions integrades: l'LLM rep datasets destacats i pot fer query directe sense cercar
+- Fix Idescat: ara retorna l'indicador especific (poblacio = 8.154.627) en lloc de 6 aleatoris
+- 9 datasets municipals centralitzats AOC: pressupostos, cost serveis, endeutament de +1.000 municipis
+- Notes a les instructions: com filtrar Socrata, CKAN (NOM_ENS), particularitats de cada portal
+- Neteja scoring del search: sense camps interns (relevance, name_boost) al response
+- Ranking: boost per datasets queryables (Socrata/CKAN primer, file_download despres)
+
 ### v0.1.0 (2026-04-14)
 - Nou portal Idescat (Institut d'Estadistica de Catalunya) — 138 indicadors estadistics
 - Client Idescat amb series temporals (poblacio, PIB, atur, inflacio, educacio, salut...)
 - Millora ranking de cerca: datasets amb el terme al nom surten primer
-- Instruccio multi-cerca a search_datasets per cobrir temes amplis
 - Sinonims ampliats: emergencies (112, SEM, ambulancia, bombers, mossos)
 
 ### v0.0.17 (2026-04-14)
