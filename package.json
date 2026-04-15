@@ -3,8 +3,8 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.1.2",
-  "description": "Servidor MCP per consultar les dades obertes públiques de Catalunya",
+  "version": "0.2.0",
+  "description": "MCP server for querying Catalan public open data — 2,800+ datasets from 9 portals",
   "type": "module",
   "main": "dist/index.js",
   "bin": {

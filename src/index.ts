@@ -14,57 +14,69 @@ import { queryOpendatasoft } from "./clients/opendatasoft.js";
 import { decodeGtfsRt } from "./clients/gtfsrt.js";
 import { queryIdescat } from "./clients/idescat.js";
 
-const INSTRUCTIONS = `Servidor MCP de dades obertes de Catalunya. Pots consultar dades reals directament amb query_dataset si coneixes el dataset_id.
+const INSTRUCTIONS = `Catalan open data MCP server. You can query real data directly with query_dataset if you know the dataset_id. Always respond in the user's language.
 
-DATASETS DESTACATS (pots fer query_dataset directament sense cercar):
-- generalitat:gn9e-3qhr → Embassaments: camps dia, estaci, volum_embassat, percentatge_volum_embassat, nivell_absolut
-- generalitat:i5n8-43cw → Estat de sequera per municipi
-- generalitat:rmgc-ncpb → Accidents de trànsit amb morts o ferits greus
-- generalitat:jq8m-d7cw → Incidents operatius gestionats pel CAT 112
-- generalitat:mfqb-sbx4 → Trucades operatives gestionades pel CAT 112
-- generalitat:g2ay-3vnj → Actuacions dels Bombers de la Generalitat
-- generalitat:j6ii-t3w2 → Certificats d'eficiència energètica d'edificis
-- fgc:vehicle-positions-gtfs_realtime → Posició GPS dels trens FGC en temps real
-- fgc:alerts-gtfs_realtime → Alertes de servei FGC en temps real
-- fgc:trip-updates-gtfs_realtime → Retards dels trens FGC en temps real
-- idescat:m10328 → Població de Catalunya
-- idescat:m10234 → Confiança empresarial
-- barcelona:accidents-gu-bcn → Accidents gestionats per la Guàrdia Urbana BCN
+FEATURED DATASETS (use query_dataset directly, no search needed):
+- generalitat:gn9e-3qhr → Embassaments (reservoirs): fields dia, estaci, volum_embassat, percentatge_volum_embassat, nivell_absolut
+- generalitat:i5n8-43cw → Estat de sequera per municipi (drought status by municipality)
+- generalitat:rmgc-ncpb → Accidents de trànsit amb morts o ferits greus (traffic accidents with deaths/serious injuries)
+- generalitat:jq8m-d7cw → Incidents operatius gestionats pel CAT 112 (112 emergency incidents)
+- generalitat:mfqb-sbx4 → Trucades operatives gestionades pel CAT 112 (112 emergency calls)
+- generalitat:g2ay-3vnj → Actuacions dels Bombers de la Generalitat (firefighter operations)
+- generalitat:j6ii-t3w2 → Certificats d'eficiència energètica d'edificis (building energy certificates)
+- fgc:vehicle-positions-gtfs_realtime → FGC train GPS positions (real-time)
+- fgc:alerts-gtfs_realtime → FGC service alerts (real-time, in Catalan)
+- fgc:trip-updates-gtfs_realtime → FGC train delays (real-time)
+- renfe:vehicle-positions-gtfsrt → Rodalies Barcelona train GPS positions (real-time)
+- renfe:trip-updates-gtfsrt → Rodalies Barcelona train delays (real-time)
+- renfe:alerts-gtfsrt → Rodalies Barcelona service alerts (real-time, in Spanish)
+- idescat:m10328 → Població de Catalunya (population)
+- idescat:m10234 → Confiança empresarial (business confidence)
+- barcelona:accidents-gu-bcn → Accidents gestionats per la Guàrdia Urbana BCN (police-managed accidents)
 
-DADES MUNICIPALS (filtra per NOM_ENS amb query_dataset):
-- aoc:ge-ge-cost-efectiu-serveis-minhap → Cost dels serveis de +1.000 municipis
-- aoc:ge-p-pressupostos-i-plantilles → Pressupostos i plantilles municipals
-- aoc:ge-ge-endeutament → Endeutament municipal
-- aoc:ge-p-liquidacions-per-programes-detallat → Liquidació pressupostos per programes
-- aoc:ge-ge-termini-pagament-proveidors → Termini pagament a proveïdors
+MUNICIPAL DATA (filter by NOM_ENS with query_dataset):
+- aoc:ge-ge-cost-efectiu-serveis-minhap → Cost dels serveis de +1,000 municipis (municipal service costs)
+- aoc:ge-p-pressupostos-i-plantilles → Pressupostos i plantilles municipals (budgets & staffing)
+- aoc:ge-ge-endeutament → Endeutament municipal (municipal debt)
+- aoc:ge-p-liquidacions-per-programes-detallat → Budget execution by program
+- aoc:ge-ge-termini-pagament-proveidors → Payment terms to suppliers
 
-PORTALS: generalitat (Socrata), barcelona (CKAN), diba (REST), aoc (CKAN), reus (CKAN), girona (CKAN), fgc (Opendatasoft+GTFS-RT), idescat (API indicadors)
+AVAILABLE PORTALS:
+generalitat (Socrata, ~1059 datasets), aoc (CKAN, ~887), barcelona (CKAN, ~555), idescat (API, ~138), reus (CKAN, ~119), diba (REST+CIDO, ~90), girona (CKAN, ~53), fgc (Opendatasoft+GTFS-RT, ~50), renfe (CKAN+GTFS-RT JSON, ~10)
+
+COMMON SEARCH KEYWORDS:
+embassament, sequera, aigua, qualitat aire, contaminació, transport, trànsit, pressupost, educació, salut, població, habitatge, turisme, energia, residus, comerç, seguretat, bombers, accidents, 112, emergència, trens, rodalies, renfe
+
+MAIN CATEGORIES:
+Medi Ambient, Economia, Educació, Salut, Seguretat, Societat-benestar, Urbanisme-infraestructures, Transport, Territori, Població, Treball, Turisme, Ciència i Tecnologia
 
 NOTES:
-- Socrata: pots filtrar per qualsevol camp. Ex: filters: {"estaci": "Embassament de Sau"}
-- CKAN AOC municipals: filtra per NOM_ENS (ex: "Ajuntament de Tiana"). Camps sovint en castellà.
-- Idescat: cada dataset_id retorna 1 indicador específic amb valor, unitat, període i sèrie temporal.
-- FGC GTFS-RT: decodificat automàticament. vehicle-positions dona GPS, alerts dona alertes en català.
-- Usa search_datasets només quan no saps quin dataset necessites.`;
+- Socrata: filter by any field. Ex: filters: {"estaci": "Embassament de Sau"}
+- CKAN AOC municipal: filter by NOM_ENS (e.g., "Ajuntament de Tiana"). Field names often in Spanish.
+- Idescat: each dataset_id returns 1 specific indicator with value, unit, period, and time series.
+- FGC GTFS-RT: auto-decoded protobuf. vehicle-positions → GPS, alerts → Catalan text.
+- Renfe GTFS-RT: JSON real-time data for Rodalies de Catalunya. Auto-filtered to Barcelona commuter routes. Content in Spanish.
+- Dataset names and field names are in Catalan or Spanish — use them as-is in queries.
+- Use search_datasets only when you don't know which dataset you need.`;
 
 const server = new McpServer(
-  { name: "opendata-cat", version: "0.1.2" },
+  { name: "opendata-cat", version: "0.2.0" },
   { instructions: INSTRUCTIONS },
 );
 
 // Tool 1: search_datasets
 server.tool(
   "search_datasets",
-  "Cerca datasets per text lliure. Mira primer les instructions del servidor: molts datasets es poden consultar directament amb query_dataset sense cercar. Usa search_datasets només quan no saps quin dataset necessites.",
+  "Search datasets by free text. Check server instructions first: many datasets can be queried directly with query_dataset. Use search_datasets only when you don't know which dataset you need.",
   {
-    query: z.string().describe("Text de cerca (ex: 'qualitat aire', 'pressupostos')"),
-    portal: z.string().optional().describe("Filtrar per portal: 'generalitat', 'barcelona', 'diba', 'aoc', 'reus', 'girona', 'fgc', 'idescat'"),
-    category: z.string().optional().describe("Filtrar per categoria"),
-    limit: z.number().optional().default(20).describe("Nombre màxim de resultats (defecte: 20)"),
+    query: z.string().describe("Search text in Catalan or Spanish. Examples: 'qualitat aire', 'pressupostos', 'rodalies'"),
+    portal: z.string().optional().describe("Filter by portal: 'generalitat', 'barcelona', 'diba', 'aoc', 'reus', 'girona', 'fgc', 'idescat', 'renfe'"),
+    category: z.string().optional().describe("Filter by thematic category"),
+    limit: z.number().optional().default(20).describe("Maximum number of results (default: 20)"),
   },
   async ({ query, portal, category, limit }) => {
     const result = await searchDatasets(query, portal, category, limit);
-    const queryableTypes = new Set(["socrata", "ckan", "opendatasoft", "idescat", "diba", "diba_cido"]);
+    const queryableTypes = new Set(["socrata", "ckan", "opendatasoft", "idescat", "diba", "diba_cido", "renfe_gtfsrt_json"]);
     const enriched = {
       ...result,
       items: result.items.map((item) => ({
@@ -84,9 +96,9 @@ server.tool(
 // Tool 2: get_dataset_info
 server.tool(
   "get_dataset_info",
-  "Retorna totes les metadades d'un dataset: camps, tipus, descripció, endpoint API, llicència.",
+  "Get complete metadata for a dataset: fields with types and descriptions, API endpoint, license.",
   {
-    dataset_id: z.string().describe("ID del dataset (ex: 'generalitat:gn9e-3qhr')"),
+    dataset_id: z.string().describe("Unique dataset identifier (e.g., 'generalitat:gn9e-3qhr', 'renfe:vehicle-positions-gtfsrt')"),
   },
   async ({ dataset_id }) => {
     const dataset = await getDatasetInfo(dataset_id);
@@ -100,9 +112,9 @@ server.tool(
 // Tool 3: list_dataset_fields
 server.tool(
   "list_dataset_fields",
-  "Llista els camps d'un dataset amb el seu nom, tipus i descripció.",
+  "List fields of a dataset with name, data type and description.",
   {
-    dataset_id: z.string().describe("ID del dataset"),
+    dataset_id: z.string().describe("Dataset identifier"),
   },
   async ({ dataset_id }) => {
     const dataset = await getDatasetInfo(dataset_id);
@@ -116,13 +128,13 @@ server.tool(
 // Tool 4: query_dataset
 server.tool(
   "query_dataset",
-  "Consulta dades reals d'un dataset. Mira les instructions per dataset_ids destacats. Per dades municipals, usa filters: {\"NOM_ENS\": \"Ajuntament de X\"} amb els datasets aoc:ge-*.",
+  "Query real data from a dataset. Check instructions for featured dataset_ids. For municipal data, use filters: {\"NOM_ENS\": \"Ajuntament de X\"} with aoc:ge-* datasets.",
   {
-    dataset_id: z.string().describe("ID del dataset (ex: 'generalitat:gn9e-3qhr' per embassaments, 'aoc:ge-ge-cost-efectiu-serveis-minhap' per cost serveis municipal)"),
-    filters: z.record(z.string(), z.string()).optional().describe("Filtres clau-valor (ex: {\"ciutat\": \"Barcelona\"})"),
-    search: z.string().optional().describe("Cerca de text lliure dins el dataset"),
-    limit: z.number().optional().default(20).describe("Files a retornar (defecte: 20, màxim: 100)"),
-    offset: z.number().optional().default(0).describe("Desplaçament per paginació"),
+    dataset_id: z.string().describe("Dataset ID (e.g., 'generalitat:gn9e-3qhr' for reservoirs, 'aoc:ge-ge-cost-efectiu-serveis-minhap' for municipal costs)"),
+    filters: z.record(z.string(), z.string()).optional().describe("Key-value filters (e.g., {\"ciutat\": \"Barcelona\"})"),
+    search: z.string().optional().describe("Free text search within dataset data"),
+    limit: z.number().optional().default(20).describe("Rows to return (default: 20, max: 100)"),
+    offset: z.number().optional().default(0).describe("Offset for pagination"),
   },
   async ({ dataset_id, filters, search, limit, offset }) => {
     const dataset = await getDatasetInfo(dataset_id);
@@ -192,6 +204,118 @@ server.tool(
             }, null, 2),
           }],
         };
+      } else if (dataset.api_type === "renfe_gtfsrt_json") {
+        // Renfe GTFS-RT in JSON — filtered to Rodalies de Catalunya routes
+        const resp = await fetch(dataset.api_endpoint);
+        const json = await resp.json() as { entity?: Array<Record<string, unknown>> };
+        if (!json.entity) {
+          return { content: [{ type: "text" as const, text: "Error fetching Renfe GTFS-RT data" }] };
+        }
+
+        // Filter to Rodalies de Catalunya routes
+        const rodaliesPattern = /^(R\d|RT\d|RG\d|RL)/i;
+        const extractRoute = (entityId: string, tripId: string): string | null => {
+          const idMatch = entityId.match(/^(?:VP_|TUUPDATE_|TUADDED_|TUCANCELED_)([A-Z0-9]+)-/i);
+          if (idMatch) return idMatch[1];
+          const tripMatch = tripId.match(/(R\d\w*|RT\d|RG\d|RL)$/i);
+          if (tripMatch) return tripMatch[1].toUpperCase();
+          return null;
+        };
+
+        const filtered = json.entity.filter((e: Record<string, unknown>) => {
+          const entityId = (e.id as string) || "";
+          if (e.vehicle) {
+            const v = e.vehicle as Record<string, unknown>;
+            const trip = v.trip as Record<string, unknown> | undefined;
+            const route = extractRoute(entityId, (trip?.tripId as string) || "");
+            return route && rodaliesPattern.test(route);
+          }
+          if (e.tripUpdate) {
+            const tu = e.tripUpdate as Record<string, unknown>;
+            const trip = tu.trip as Record<string, unknown> | undefined;
+            const route = extractRoute(entityId, (trip?.tripId as string) || "");
+            return route && rodaliesPattern.test(route);
+          }
+          if (e.alert) {
+            const a = e.alert as Record<string, unknown>;
+            const informed = (a.informedEntity as Array<Record<string, unknown>>) || [];
+            return informed.some((ie) => rodaliesPattern.test((ie.routeId as string) || ""));
+          }
+          return false;
+        });
+
+        const sliced = filtered.slice(offset, offset + limit);
+        const data = sliced.map((e: Record<string, unknown>) => {
+          const entityId = (e.id as string) || "";
+          if (e.vehicle) {
+            const v = e.vehicle as Record<string, unknown>;
+            const trip = v.trip as Record<string, unknown> | undefined;
+            const pos = v.position as Record<string, unknown> | undefined;
+            const veh = v.vehicle as Record<string, unknown> | undefined;
+            return {
+              trip_id: trip?.tripId ?? null,
+              route_id: extractRoute(entityId, (trip?.tripId as string) || ""),
+              latitude: pos?.latitude ?? null,
+              longitude: pos?.longitude ?? null,
+              speed_kmh: pos?.speed != null ? Math.round((pos.speed as number) * 3.6) : null,
+              current_status: v.currentStatus ?? null,
+              stop_id: v.stopId ?? null,
+              vehicle_label: veh?.label ?? null,
+              timestamp: v.timestamp ? new Date(Number(v.timestamp) * 1000).toISOString() : null,
+            };
+          }
+          if (e.tripUpdate) {
+            const tu = e.tripUpdate as Record<string, unknown>;
+            const trip = tu.trip as Record<string, unknown> | undefined;
+            const stops = ((tu.stopTimeUpdate as Array<Record<string, unknown>>) || []).map((su) => ({
+              stop_id: su.stopId ?? null,
+              arrival_delay_seconds: (su.arrival as Record<string, unknown>)?.delay ?? null,
+              departure_delay_seconds: (su.departure as Record<string, unknown>)?.delay ?? null,
+            }));
+            return {
+              trip_id: trip?.tripId ?? null,
+              route_id: extractRoute(entityId, (trip?.tripId as string) || ""),
+              schedule_relationship: trip?.scheduleRelationship ?? "SCHEDULED",
+              delay_seconds: tu.delay ?? null,
+              stops,
+            };
+          }
+          if (e.alert) {
+            const a = e.alert as Record<string, unknown>;
+            const informed = (a.informedEntity as Array<Record<string, unknown>>) || [];
+            const routes = [...new Set(informed.map((ie) => ie.routeId as string).filter(Boolean))];
+            const headerText = a.headerText as Record<string, unknown> | undefined;
+            const descText = a.descriptionText as Record<string, unknown> | undefined;
+            const headerTranslations = (headerText?.translation as Array<Record<string, unknown>>) || [];
+            const descTranslations = (descText?.translation as Array<Record<string, unknown>>) || [];
+            return {
+              header: headerTranslations[0]?.text ?? null,
+              description: descTranslations[0]?.text ?? null,
+              routes,
+            };
+          }
+          return e;
+        });
+
+        let feedType = "unknown";
+        if (data.length > 0 && "latitude" in data[0]) feedType = "vehicle_positions";
+        else if (data.length > 0 && "delay_seconds" in data[0]) feedType = "trip_updates";
+        else if (data.length > 0 && "header" in data[0]) feedType = "alerts";
+
+        return {
+          content: [{
+            type: "text" as const,
+            text: JSON.stringify({
+              dataset: dataset.name,
+              format: "GTFS Realtime (JSON)",
+              type: feedType,
+              filter: "Rodalies de Catalunya only",
+              total_entities: filtered.length,
+              count: data.length,
+              data,
+            }, null, 2),
+          }],
+        };
       } else {
         return {
           content: [{
@@ -221,7 +345,7 @@ server.tool(
 // Tool 5: list_portals
 server.tool(
   "list_portals",
-  "Llista els portals de dades obertes catalans disponibles amb estadístiques.",
+  "List all 9 indexed Catalan open data portals with dataset counts.",
   {},
   async () => {
     const portals = [
@@ -233,6 +357,7 @@ server.tool(
       { id: "girona", name: "Ajuntament de Girona", url: "https://www.girona.cat/opendata/", api: "CKAN" },
       { id: "fgc", name: "Ferrocarrils de la Generalitat de Catalunya", url: "https://dadesobertes.fgc.cat", api: "Opendatasoft" },
       { id: "idescat", name: "Idescat (Institut d'Estadística de Catalunya)", url: "https://www.idescat.cat", api: "Idescat API" },
+      { id: "renfe", name: "Renfe (Rodalies de Catalunya)", url: "https://data.renfe.com", api: "CKAN + GTFS-RT JSON" },
     ];
 
     const cats = await getCategories();
@@ -250,7 +375,7 @@ server.tool(
 // Tool 6: list_categories
 server.tool(
   "list_categories",
-  "Llista totes les categories i temes de datasets disponibles amb comptadors per portal. Útil per saber quins tipus de dades hi ha.",
+  "List all dataset categories and themes with counts per portal. Great first step to discover what data types are available.",
   {},
   async () => {
     const cats = await getCategories();
@@ -261,9 +386,9 @@ server.tool(
 // Tool 7: related_datasets
 server.tool(
   "related_datasets",
-  "Retorna datasets relacionats d'ALTRES portals. Ideal per descobrir dades complementàries.",
+  "Find related datasets from OTHER portals. Great for discovering complementary data.",
   {
-    dataset_id: z.string().describe("ID del dataset del qual vols trobar relacionats"),
+    dataset_id: z.string().describe("Dataset ID to find related datasets for"),
   },
   async ({ dataset_id }) => {
     const dataset = await getDatasetInfo(dataset_id);
@@ -300,20 +425,20 @@ server.tool(
 
 server.prompt(
   "estat_embassaments",
-  "Analitza l'estat actual dels embassaments de Catalunya amb gràfiques d'evolució.",
+  "Analyze current status of Catalan reservoirs with evolution charts.",
   () => ({
     messages: [{
       role: "user" as const,
       content: {
         type: "text" as const,
-        text: "Consulta l'estat actual dels embassaments de les Conques Internes de Catalunya.\n\n"
-          + "1. Usa search_datasets amb 'embassament' per trobar el dataset rellevant\n"
-          + "2. Usa query_dataset per obtenir les últimes dades\n"
-          + "3. Presenta una taula amb cada embassament: nom, volum actual (hm³), percentatge ple, i variació\n"
-          + "4. Genera un gràfic ASCII o Markdown amb l'evolució dels nivells\n"
-          + "5. Destaca embassaments en situació crítica (< 40%) i els que estan millor\n"
-          + "6. Compara amb el dataset d'estat de sequera si n'hi ha\n\n"
-          + "Mostra les dades de forma visual i fàcil d'entendre.",
+        text: "Query the current status of reservoirs in Catalonia's internal basins.\n\n"
+          + "1. Use search_datasets with 'embassament' to find the relevant dataset\n"
+          + "2. Use query_dataset to get the latest data\n"
+          + "3. Present a table for each reservoir: name, current volume (hm³), fill percentage, and variation\n"
+          + "4. Generate an ASCII or Markdown chart showing level evolution\n"
+          + "5. Highlight reservoirs in critical condition (< 40%) and the best ones\n"
+          + "6. Compare with the drought status dataset if available\n\n"
+          + "Present data visually and in an easy-to-understand format.",
       },
     }],
   }),
@@ -321,21 +446,44 @@ server.prompt(
 
 server.prompt(
   "trens_fgc_temps_real",
-  "Consulta l'estat dels trens de FGC en temps real: retards, alertes i posicions.",
+  "Check FGC trains real-time status: delays, alerts and positions.",
   () => ({
     messages: [{
       role: "user" as const,
       content: {
         type: "text" as const,
-        text: "Consulta l'estat en temps real dels trens de Ferrocarrils de la Generalitat de Catalunya (FGC).\n\n"
-          + "1. Usa search_datasets amb portal 'fgc' per trobar els datasets GTFS Realtime\n"
-          + "2. Consulta 'trip-updates' per veure retards actuals\n"
-          + "3. Consulta 'vehicle-positions' per veure on són els trens\n"
-          + "4. Consulta 'alerts' per veure si hi ha alertes de servei\n\n"
-          + "Presenta un resum clar:\n"
-          + "- Trens amb retard (quants minuts, quina línia)\n"
-          + "- Alertes actives de servei\n"
-          + "- Estat general: normal / amb incidències / interromput",
+        text: "Query the real-time status of Ferrocarrils de la Generalitat de Catalunya (FGC) trains.\n\n"
+          + "1. Use search_datasets with portal 'fgc' to find GTFS Realtime datasets\n"
+          + "2. Query 'trip-updates' for current delays\n"
+          + "3. Query 'vehicle-positions' to see where trains are\n"
+          + "4. Query 'alerts' for active service alerts\n\n"
+          + "Present a clear summary:\n"
+          + "- Delayed trains (how many minutes, which line)\n"
+          + "- Active service alerts\n"
+          + "- Overall status: normal / with incidents / disrupted",
+      },
+    }],
+  }),
+);
+
+server.prompt(
+  "trens_rodalies_temps_real",
+  "Check Rodalies de Catalunya (Renfe) trains real-time status: delays, alerts and GPS positions.",
+  () => ({
+    messages: [{
+      role: "user" as const,
+      content: {
+        type: "text" as const,
+        text: "Query the real-time status of Rodalies de Catalunya (Renfe commuter trains in Barcelona area).\n\n"
+          + "1. Query renfe:trip-updates-gtfsrt to see current delays on Rodalies lines\n"
+          + "2. Query renfe:vehicle-positions-gtfsrt to see GPS positions of active trains\n"
+          + "3. Query renfe:alerts-gtfsrt for active service alerts (in Spanish)\n\n"
+          + "Present a clear summary:\n"
+          + "- Delayed trains (delay in minutes, route: R1, R2, R2S, R3, R4, etc.)\n"
+          + "- Active service alerts affecting Rodalies lines\n"
+          + "- Number of active trains and their positions\n"
+          + "- Overall status: normal / with incidents / disrupted\n\n"
+          + "Note: Rodalies routes are R1-R8, R11-R16, RT1, RT2, RG1, RL.",
       },
     }],
   }),
@@ -343,24 +491,24 @@ server.prompt(
 
 server.prompt(
   "qualitat_aire",
-  "Analitza la qualitat de l'aire a una estació o municipi de Catalunya.",
-  { lloc: z.string().optional().describe("Nom del municipi o estació (ex: 'Barcelona', 'Sabadell')") },
+  "Analyze air quality at a Catalan station or municipality.",
+  { lloc: z.string().optional().describe("Municipality or station name (e.g., 'Barcelona', 'Sabadell')") },
   ({ lloc }) => {
-    const filtreText = lloc ? ` a ${lloc}` : " a les principals estacions";
+    const filtreText = lloc ? ` in ${lloc}` : " at major stations";
     return {
       messages: [{
         role: "user" as const,
         content: {
           type: "text" as const,
-          text: `Analitza la qualitat de l'aire${filtreText}.\n\n`
-            + "1. Usa search_datasets amb 'qualitat aire contaminació' per trobar els datasets rellevants\n"
-            + "2. Consulta les últimes mesures disponibles"
-            + (lloc ? ` filtrant per '${lloc}'` : "") + "\n"
-            + "3. Presenta els nivells de: NO₂, PM10, PM2.5, O₃, SO₂ (els que hi hagi)\n"
-            + "4. Compara amb els llindars de l'OMS i la normativa UE\n"
-            + "5. Dona una valoració global: bona / acceptable / dolenta / molt dolenta\n"
-            + "6. Si hi ha dades històriques, mostra la tendència recent\n\n"
-            + "Usa taules i indicadors visuals per fer-ho entenedor.",
+          text: `Analyze air quality${filtreText}.\n\n`
+            + "1. Use search_datasets with 'qualitat aire contaminació' to find relevant datasets\n"
+            + "2. Query the latest available measurements"
+            + (lloc ? ` filtering by '${lloc}'` : "") + "\n"
+            + "3. Present levels of: NO₂, PM10, PM2.5, O₃, SO₂ (whichever available)\n"
+            + "4. Compare with WHO thresholds and EU regulations\n"
+            + "5. Give an overall assessment: good / acceptable / poor / very poor\n"
+            + "6. If historical data exists, show recent trends\n\n"
+            + "Use tables and visual indicators to make it understandable.",
         },
       }],
     };
@@ -369,23 +517,23 @@ server.prompt(
 
 server.prompt(
   "accidents_transit",
-  "Analitza les dades d'accidents de trànsit a Catalunya o a un municipi concret.",
-  { municipi: z.string().optional().describe("Nom del municipi (ex: 'Barcelona', 'Hospitalet')") },
+  "Analyze traffic accident data in Catalonia or a specific municipality.",
+  { municipi: z.string().optional().describe("Municipality name (e.g., 'Barcelona', 'Hospitalet')") },
   ({ municipi }) => {
-    const filtreText = municipi ? ` a ${municipi}` : " a Catalunya";
+    const filtreText = municipi ? ` in ${municipi}` : " in Catalonia";
     return {
       messages: [{
         role: "user" as const,
         content: {
           type: "text" as const,
-          text: `Analitza les dades d'accidents de trànsit${filtreText}.\n\n`
-            + "1. Usa search_datasets amb 'accidents trànsit" + (municipi ? ` ${municipi}` : "") + "'\n"
-            + "2. Consulta les dades més recents\n"
-            + "3. Presenta: nombre total d'accidents, distribució per gravetat (mortals, ferits greus, lleus)\n"
-            + "4. Si hi ha dades geolocalitzades, identifica els punts negres\n"
-            + "5. Analitza tendències: augmenten o disminueixen?\n"
-            + "6. Busca datasets relacionats amb related_datasets per completar l'anàlisi\n\n"
-            + "Presenta conclusions clares amb dades concretes.",
+          text: `Analyze traffic accident data${filtreText}.\n\n`
+            + "1. Use search_datasets with 'accidents trànsit" + (municipi ? ` ${municipi}` : "") + "'\n"
+            + "2. Query the most recent data\n"
+            + "3. Present: total accidents, distribution by severity (fatal, serious injuries, minor)\n"
+            + "4. If geolocated data exists, identify hotspots\n"
+            + "5. Analyze trends: increasing or decreasing?\n"
+            + "6. Look for related datasets with related_datasets to enrich the analysis\n\n"
+            + "Present clear conclusions with concrete data.",
         },
       }],
     };
@@ -394,22 +542,22 @@ server.prompt(
 
 server.prompt(
   "pressupostos_municipals",
-  "Explora i compara els pressupostos municipals d'ajuntaments catalans.",
-  { municipi: z.string().optional().describe("Nom del municipi") },
+  "Explore and compare municipal budgets of Catalan municipalities.",
+  { municipi: z.string().optional().describe("Municipality name") },
   ({ municipi }) => {
-    const filtreText = municipi ? ` de ${municipi}` : "";
+    const filtreText = municipi ? ` for ${municipi}` : "";
     return {
       messages: [{
         role: "user" as const,
         content: {
           type: "text" as const,
-          text: `Explora els pressupostos municipals${filtreText}.\n\n`
-            + "1. Usa search_datasets amb 'pressupost" + (municipi ? ` ${municipi}` : " municipal") + "'\n"
-            + "2. Consulta les últimes dades de pressupost disponibles\n"
-            + "3. Desglossa: ingressos vs despeses, partides principals\n"
-            + "4. Si hi ha dades multi-any, mostra l'evolució\n"
-            + "5. Destaca les partides més grans i les variacions significatives\n\n"
-            + "Presenta les xifres en format comprensible (milions €) amb taules.",
+          text: `Explore municipal budgets${filtreText}.\n\n`
+            + "1. Use search_datasets with 'pressupost" + (municipi ? ` ${municipi}` : " municipal") + "'\n"
+            + "2. Query the latest budget data available\n"
+            + "3. Break down: revenue vs expenditure, main line items\n"
+            + "4. If multi-year data exists, show evolution\n"
+            + "5. Highlight the largest items and significant variations\n\n"
+            + "Present figures in comprehensible format (millions €) with tables.",
         },
       }],
     };
@@ -418,23 +566,23 @@ server.prompt(
 
 server.prompt(
   "compara_municipis",
-  "Compara dos municipis catalans en totes les dades obertes disponibles.",
+  "Compare two Catalan municipalities across all available open data.",
   {
-    municipi_a: z.string().describe("Primer municipi"),
-    municipi_b: z.string().describe("Segon municipi"),
+    municipi_a: z.string().describe("First municipality"),
+    municipi_b: z.string().describe("Second municipality"),
   },
   ({ municipi_a, municipi_b }) => ({
     messages: [{
       role: "user" as const,
       content: {
         type: "text" as const,
-        text: `Compara els municipis de ${municipi_a} i ${municipi_b} amb totes les dades obertes disponibles.\n\n`
-          + `1. Usa search_datasets per trobar datasets que incloguin '${municipi_a}'\n`
-          + `2. Usa search_datasets per trobar datasets que incloguin '${municipi_b}'\n`
-          + "3. Per cada tema comú (població, pressupost, equipaments, transport...), consulta les dades dels dos municipis\n"
-          + "4. Presenta una taula comparativa amb les dades clau\n"
-          + "5. Destaca les diferències més significatives\n\n"
-          + "Organitza la comparativa per temes i indica la font de cada dada.",
+        text: `Compare the municipalities of ${municipi_a} and ${municipi_b} across all available open data.\n\n`
+          + `1. Use search_datasets to find datasets that include '${municipi_a}'\n`
+          + `2. Use search_datasets to find datasets that include '${municipi_b}'\n`
+          + "3. For each common topic (population, budget, facilities, transport...), query data for both municipalities\n"
+          + "4. Present a comparative table with key data\n"
+          + "5. Highlight the most significant differences\n\n"
+          + "Organize the comparison by topic and indicate the source of each data point.",
       },
     }],
   }),
@@ -442,20 +590,20 @@ server.prompt(
 
 server.prompt(
   "descobreix_dades",
-  "Explora quines dades obertes hi ha disponibles sobre un tema a Catalunya.",
-  { tema: z.string().describe("Tema a explorar (ex: 'educació', 'medi ambient', 'turisme')") },
+  "Explore what open data is available about a topic in Catalonia.",
+  { tema: z.string().describe("Topic to explore (e.g., 'educació', 'medi ambient', 'turisme')") },
   ({ tema }) => ({
     messages: [{
       role: "user" as const,
       content: {
         type: "text" as const,
-        text: `Explora totes les dades obertes disponibles sobre '${tema}' a Catalunya.\n\n`
-          + `1. Usa search_datasets amb '${tema}' (limit: 50)\n`
-          + "2. Agrupa els resultats per portal i categoria\n"
-          + "3. Per als 3-5 datasets més rellevants, usa get_dataset_info per mostrar detalls (camps, tipus, actualització)\n"
-          + "4. Usa related_datasets per descobrir dades complementàries\n"
-          + "5. Suggereix 3 anàlisis interessants que es podrien fer creuant aquests datasets\n\n"
-          + "L'objectiu és donar un mapa complet de quines dades existeixen i què es pot fer amb elles.",
+        text: `Explore all available open data about '${tema}' in Catalonia.\n\n`
+          + `1. Use search_datasets with '${tema}' (limit: 50)\n`
+          + "2. Group results by portal and category\n"
+          + "3. For the 3-5 most relevant datasets, use get_dataset_info to show details (fields, types, update date)\n"
+          + "4. Use related_datasets to discover complementary data\n"
+          + "5. Suggest 3 interesting analyses that could be done by crossing these datasets\n\n"
+          + "The goal is to provide a complete map of what data exists and what can be done with it.",
       },
     }],
   }),
@@ -463,50 +611,50 @@ server.prompt(
 
 server.prompt(
   "analisi_bombers",
-  "Analitza les actuacions dels Bombers de la Generalitat: tipus d'emergències, distribució territorial i tendències.",
-  { comarca: z.string().optional().describe("Filtrar per comarca (ex: 'Barcelonès', 'Vallès Occidental')") },
+  "Analyze Catalan firefighter operations: emergency types, territorial distribution and trends.",
+  { comarca: z.string().optional().describe("Filter by comarca (e.g., 'Barcelonès', 'Vallès Occidental')") },
   ({ comarca }) => {
-    const filtreText = comarca ? ` a la comarca de ${comarca}` : "";
+    const filtreText = comarca ? ` in comarca ${comarca}` : "";
     return {
       messages: [{
         role: "user" as const,
         content: {
           type: "text" as const,
-          text: `Analitza les actuacions dels Bombers de la Generalitat${filtreText}.\n\n`
-            + "1. Usa search_datasets amb 'bombers actuacions emergències'\n"
-            + "2. Consulta els datasets d'actuacions, GRAF i EAIC\n"
-            + "3. Presenta: nombre total d'actuacions, distribució per tipus (incendis, rescats, inundacions...)\n"
-            + "4. Si hi ha dades temporals, mostra estacionalitat (estiu = incendis?)\n"
-            + "5. Identifica les zones amb més actuacions\n"
-            + (comarca ? `6. Filtra específicament per la comarca de ${comarca}\n` : "")
-            + "\nFes una anàlisi visual amb taules i percentatges.",
+          text: `Analyze Catalan firefighter (Bombers de la Generalitat) operations${filtreText}.\n\n`
+            + "1. Use search_datasets with 'bombers actuacions emergències'\n"
+            + "2. Query operations datasets (GRAF, EAIC)\n"
+            + "3. Present: total operations, distribution by type (fires, rescues, floods...)\n"
+            + "4. If temporal data exists, show seasonality (summer = fires?)\n"
+            + "5. Identify areas with the most operations\n"
+            + (comarca ? `6. Filter specifically for comarca ${comarca}\n` : "")
+            + "\nProvide a visual analysis with tables and percentages.",
         },
       }],
     };
   },
 );
 
-// ===== PROMPTS DE DESCOBRIMENT =====
+// ===== DISCOVERY PROMPTS =====
 
 server.prompt(
   "novetats",
-  "Mostra els datasets actualitzats més recentment als portals de dades obertes de Catalunya.",
-  { portal: z.string().optional().describe("Filtrar per portal: generalitat, barcelona, diba, aoc, reus, girona, fgc") },
+  "Show the most recently updated datasets across Catalan open data portals.",
+  { portal: z.string().optional().describe("Filter by portal: generalitat, barcelona, diba, aoc, reus, girona, fgc, idescat, renfe") },
   ({ portal }) => {
-    const filtreText = portal ? ` al portal ${portal}` : "";
+    const filtreText = portal ? ` on portal ${portal}` : "";
     return {
       messages: [{
         role: "user" as const,
         content: {
           type: "text" as const,
-          text: `Mostra els datasets de dades obertes de Catalunya actualitzats més recentment${filtreText}.\n\n`
-            + "1. Usa list_portals per veure els portals disponibles\n"
-            + `2. Usa search_datasets amb termes generals${portal ? ` i portal '${portal}'` : ""} per obtenir datasets\n`
-            + "3. Per als primers 10 resultats, usa get_dataset_info per veure la data d'última actualització (last_updated)\n"
-            + "4. Ordena per data d'actualització (més recent primer)\n"
-            + "5. Presenta una taula amb: nom, portal, categoria, última actualització, formats\n"
-            + "6. Destaca els que s'han actualitzat en els últims 7 dies\n\n"
-            + "L'objectiu és descobrir quines dades es mantenen actives i actualitzades.",
+          text: `Show the most recently updated Catalan open datasets${filtreText}.\n\n`
+            + "1. Use list_portals to see available portals\n"
+            + `2. Use search_datasets with general terms${portal ? ` and portal '${portal}'` : ""} to get datasets\n`
+            + "3. For the first 10 results, use get_dataset_info to check last_updated date\n"
+            + "4. Sort by update date (most recent first)\n"
+            + "5. Present a table with: name, portal, category, last update, formats\n"
+            + "6. Highlight those updated in the last 7 days\n\n"
+            + "The goal is to discover which datasets are actively maintained.",
         },
       }],
     };
@@ -515,23 +663,23 @@ server.prompt(
 
 server.prompt(
   "datasets_populars",
-  "Mostra els datasets més consultats pels usuaris del MCP.",
+  "Show the most queried datasets by MCP users.",
   () => ({
     messages: [{
       role: "user" as const,
       content: {
         type: "text" as const,
-        text: "Mostra els datasets de dades obertes de Catalunya més consultats pels usuaris.\n\n"
-          + "1. Usa search_datasets amb termes populars: 'embassament', 'qualitat aire', 'transport', 'pressupost', 'població'\n"
-          + "2. Per cada cerca, agafa el primer resultat i usa get_dataset_info per obtenir detalls\n"
-          + "3. Presenta un rànquing dels datasets més rellevants amb:\n"
-          + "   - Nom i portal\n"
-          + "   - Descripció breu\n"
-          + "   - Camps disponibles\n"
-          + "   - Última actualització\n"
-          + "4. Per al top 3, fes una consulta amb query_dataset (limit: 3) per mostrar una mostra de dades reals\n"
-          + "5. Suggereix preguntes interessants que es podrien fer a cada dataset\n\n"
-          + "L'objectiu és inspirar l'usuari amb les possibilitats de les dades obertes.",
+        text: "Show the most popular Catalan open datasets queried by users.\n\n"
+          + "1. Use search_datasets with popular terms: 'embassament', 'qualitat aire', 'transport', 'pressupost', 'població', 'rodalies'\n"
+          + "2. For each search, take the top result and use get_dataset_info for details\n"
+          + "3. Present a ranking of the most relevant datasets with:\n"
+          + "   - Name and portal\n"
+          + "   - Brief description\n"
+          + "   - Available fields\n"
+          + "   - Last update\n"
+          + "4. For the top 3, run query_dataset (limit: 3) to show a sample of real data\n"
+          + "5. Suggest interesting questions that could be asked to each dataset\n\n"
+          + "The goal is to inspire the user with open data possibilities.",
       },
     }],
   }),
@@ -539,24 +687,24 @@ server.prompt(
 
 server.prompt(
   "explorar_portal",
-  "Explora un portal de dades obertes: quants datasets té, categories, exemples de cada tipus.",
-  { portal: z.string().describe("Portal a explorar: generalitat, barcelona, diba, aoc, reus, girona, fgc") },
+  "Explore an open data portal: dataset count, categories, examples of each type.",
+  { portal: z.string().describe("Portal to explore: generalitat, barcelona, diba, aoc, reus, girona, fgc, idescat, renfe") },
   ({ portal }) => ({
     messages: [{
       role: "user" as const,
       content: {
         type: "text" as const,
-        text: `Fes una exploració completa del portal de dades obertes '${portal}'.\n\n`
-          + "1. Usa list_portals per obtenir el nombre total de datasets\n"
-          + "2. Usa list_categories per veure les categories disponibles al portal\n"
-          + `3. Usa search_datasets amb portal '${portal}' i limit 50 per veure tots els datasets\n`
-          + "4. Agrupa-los per categoria i presenta una taula resum\n"
-          + "5. Per a cada categoria, tria el dataset més interessant i usa get_dataset_info per mostrar-ne els camps\n"
-          + "6. Destaca:\n"
-          + "   - Datasets amb dades en temps real o actualització freqüent\n"
-          + "   - Datasets amb molts camps (rics en dades)\n"
-          + "   - Datasets únics que no es troben a altres portals\n\n"
-          + "Presenta el portal com una guia completa per a un nou usuari.",
+        text: `Perform a complete exploration of the '${portal}' open data portal.\n\n`
+          + "1. Use list_portals to get total dataset count\n"
+          + "2. Use list_categories to see categories available in the portal\n"
+          + `3. Use search_datasets with portal '${portal}' and limit 50 to see all datasets\n`
+          + "4. Group by category and present a summary table\n"
+          + "5. For each category, pick the most interesting dataset and use get_dataset_info to show its fields\n"
+          + "6. Highlight:\n"
+          + "   - Real-time or frequently updated datasets\n"
+          + "   - Data-rich datasets (many fields)\n"
+          + "   - Unique datasets not found in other portals\n\n"
+          + "Present the portal as a complete guide for a new user.",
       },
     }],
   }),
@@ -564,25 +712,25 @@ server.prompt(
 
 server.prompt(
   "dades_municipi",
-  "Descobreix totes les dades obertes disponibles sobre un municipi concret de Catalunya.",
-  { municipi: z.string().describe("Nom del municipi (ex: 'Sabadell', 'Girona', 'Manresa')") },
+  "Discover all available open data about a specific Catalan municipality.",
+  { municipi: z.string().describe("Municipality name (e.g., 'Sabadell', 'Girona', 'Manresa')") },
   ({ municipi }) => ({
     messages: [{
       role: "user" as const,
       content: {
         type: "text" as const,
-        text: `Descobreix totes les dades obertes disponibles sobre el municipi de ${municipi}.\n\n`
-          + `1. Usa search_datasets amb '${municipi}' (limit: 50) per trobar tots els datasets\n`
-          + "2. Agrupa per portal i categoria\n"
-          + "3. Per als datasets més rellevants, usa get_dataset_info per veure detalls\n"
-          + "4. Fes query_dataset (limit: 3) als 2-3 datasets més interessants per mostrar dades reals\n"
-          + "5. Usa related_datasets per trobar dades complementàries d'altres portals\n"
-          + "6. Presenta un resum en format fitxa municipal:\n"
-          + "   - Població (si hi ha dades)\n"
-          + "   - Pressupost (si hi ha dades)\n"
-          + "   - Equipaments, transport, medi ambient...\n"
-          + `   - Què falta: quins temes no tenen dades obertes\n\n`
-          + `L'objectiu és donar un retrat complet de ${municipi} a través de les dades obertes.`,
+        text: `Discover all available open data about the municipality of ${municipi}.\n\n`
+          + `1. Use search_datasets with '${municipi}' (limit: 50) to find all datasets\n`
+          + "2. Group by portal and category\n"
+          + "3. For the most relevant datasets, use get_dataset_info for details\n"
+          + "4. Run query_dataset (limit: 3) on the 2-3 most interesting datasets to show real data\n"
+          + "5. Use related_datasets to find complementary data from other portals\n"
+          + "6. Present a municipal profile summary:\n"
+          + "   - Population (if data available)\n"
+          + "   - Budget (if data available)\n"
+          + "   - Facilities, transport, environment...\n"
+          + "   - What's missing: topics without open data\n\n"
+          + `The goal is to provide a complete portrait of ${municipi} through open data.`,
       },
     }],
   }),
@@ -590,24 +738,25 @@ server.prompt(
 
 server.prompt(
   "datasets_temps_real",
-  "Llista els datasets que ofereixen dades en temps real o actualització freqüent.",
+  "List datasets offering real-time or frequently updated data.",
   () => ({
     messages: [{
       role: "user" as const,
       content: {
         type: "text" as const,
-        text: "Descobreix quins datasets de dades obertes de Catalunya ofereixen dades en temps real o actualització molt freqüent.\n\n"
-          + "1. Usa search_datasets amb termes com 'temps real', 'GTFS', 'realtime' per trobar datasets en viu\n"
-          + "2. Usa search_datasets amb portal 'fgc' per trobar dades de transport en temps real\n"
-          + "3. Usa search_datasets amb 'qualitat aire estacions' per trobar mesures en directe\n"
-          + "4. Usa search_datasets amb 'embassament' i 'cabal' per trobar dades hídriques en viu\n"
-          + "5. Per cada dataset trobat, usa get_dataset_info per verificar la freqüència d'actualització\n"
-          + "6. Presenta una llista organitzada per tema:\n"
-          + "   - Transport: trens FGC, trànsit, bicing...\n"
-          + "   - Medi ambient: aire, aigua, meteorologia...\n"
-          + "   - Altres en temps real\n"
-          + "7. Per als 3 més interessants, fes query_dataset per mostrar les últimes dades\n\n"
-          + "L'objectiu és que l'usuari sàpiga quines dades pot consultar 'ara mateix'.",
+        text: "Discover which Catalan open datasets offer real-time or frequently updated data.\n\n"
+          + "1. Use search_datasets with 'temps real', 'GTFS', 'realtime' to find live datasets\n"
+          + "2. Use search_datasets with portal 'fgc' for FGC real-time transport data\n"
+          + "3. Use search_datasets with portal 'renfe' for Rodalies de Catalunya real-time train data\n"
+          + "4. Use search_datasets with 'qualitat aire estacions' for live air quality measurements\n"
+          + "5. Use search_datasets with 'embassament' and 'cabal' for live water data\n"
+          + "6. For each dataset found, use get_dataset_info to check update frequency\n"
+          + "7. Present an organized list by topic:\n"
+          + "   - Transport: FGC trains, Rodalies Renfe, traffic, bicing...\n"
+          + "   - Environment: air, water, weather...\n"
+          + "   - Other real-time sources\n"
+          + "8. For the 3 most interesting, run query_dataset to show the latest data\n\n"
+          + "The goal is to let the user know what data they can query 'right now'.",
       },
     }],
   }),
@@ -615,24 +764,24 @@ server.prompt(
 
 server.prompt(
   "resum_portals",
-  "Resum general de tots els portals: quants datasets, quins temes, quins formats.",
+  "General summary of all portals: dataset counts, topics, formats.",
   () => ({
     messages: [{
       role: "user" as const,
       content: {
         type: "text" as const,
-        text: "Fes un resum complet de tots els portals de dades obertes de Catalunya.\n\n"
-          + "1. Usa list_portals per obtenir la llista amb comptadors\n"
-          + "2. Usa list_categories per veure les categories de cada portal\n"
-          + "3. Presenta una taula comparativa:\n"
-          + "   - Nom del portal, URL, nombre de datasets\n"
-          + "   - Tipus d'API (Socrata, CKAN, REST, Opendatasoft)\n"
-          + "   - Categories principals\n"
-          + "   - Tipus de dades destacades\n"
-          + "4. Per cada portal, destaca el dataset més singular o interessant\n"
-          + "5. Indica quins portals tenen dades en temps real\n"
-          + "6. Suggereix per a cada portal una pregunta interessant que es podria respondre amb les seves dades\n\n"
-          + "L'objectiu és donar una visió panoràmica de l'ecosistema de dades obertes català.",
+        text: "Provide a complete summary of all Catalan open data portals.\n\n"
+          + "1. Use list_portals to get the list with counts\n"
+          + "2. Use list_categories to see categories for each portal\n"
+          + "3. Present a comparative table:\n"
+          + "   - Portal name, URL, dataset count\n"
+          + "   - API type (Socrata, CKAN, REST, Opendatasoft, GTFS-RT)\n"
+          + "   - Main categories\n"
+          + "   - Notable data types\n"
+          + "4. For each portal, highlight the most unique or interesting dataset\n"
+          + "5. Indicate which portals have real-time data\n"
+          + "6. Suggest an interesting question that could be answered with each portal's data\n\n"
+          + "The goal is to provide a panoramic view of the Catalan open data ecosystem.",
       },
     }],
   }),
@@ -655,7 +804,7 @@ async function main() {
       // Health check
       if (req.url === "/health") {
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.1.2" }));
+        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.2.0" }));
         return;
       }
 
