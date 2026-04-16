@@ -3,8 +3,8 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.2.0",
-  "description": "MCP server for querying Catalan public open data — 2,800+ datasets from 9 portals",
+  "version": "0.3.0",
+  "description": "MCP server for querying Catalan public open data — 2,850+ datasets from 14 portals",
   "type": "module",
   "main": "dist/index.js",
   "bin": {

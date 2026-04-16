@@ -30,6 +30,14 @@ FEATURED DATASETS (use query_dataset directly, no search needed):
 - renfe:vehicle-positions-gtfsrt → Rodalies Barcelona train GPS positions (real-time)
 - renfe:trip-updates-gtfsrt → Rodalies Barcelona train delays (real-time)
 - renfe:alerts-gtfsrt → Rodalies Barcelona service alerts (real-time, in Spanish)
+- aemet:observacio-convencional → Real-time weather: temperature, rain, wind (~80 stations in Catalonia)
+- aemet:prediccio-municipis → 7-day weather forecast for any municipality (filter by codiINE)
+- ine:poblacio-municipis → Population by municipality from INE (national census)
+- ine:epa-atur-ocupacio → Employment/unemployment by region (EPA survey)
+- ine:turisme-ocupacio-hotelera → Hotel occupancy by province/tourist destination
+- ree:generacio-espanya → Electricity generation mix in Spain (solar, wind, nuclear...)
+- ree:preus-electricitat → Real-time electricity prices (PVPC)
+- cnmc:preus-carburants → Fuel prices at every gas station in Spain
 - idescat:m10328 → Població de Catalunya (population)
 - idescat:m10234 → Confiança empresarial (business confidence)
 - barcelona:accidents-gu-bcn → Accidents gestionats per la Guàrdia Urbana BCN (police-managed accidents)
@@ -42,10 +50,10 @@ MUNICIPAL DATA (filter by NOM_ENS with query_dataset):
 - aoc:ge-ge-termini-pagament-proveidors → Payment terms to suppliers
 
 AVAILABLE PORTALS:
-generalitat (Socrata, ~1059 datasets), aoc (CKAN, ~887), barcelona (CKAN, ~555), idescat (API, ~138), reus (CKAN, ~119), diba (REST+CIDO, ~90), girona (CKAN, ~53), fgc (Opendatasoft+GTFS-RT, ~50), renfe (CKAN+GTFS-RT JSON, ~10)
+generalitat (Socrata, ~1059), aoc (CKAN, ~887), barcelona (CKAN, ~555), idescat (API, ~138), reus (CKAN, ~119), diba (REST+CIDO, ~90), girona (CKAN, ~53), fgc (ODS+GTFS-RT, ~50), renfe (CKAN+GTFS-RT, ~6), aemet (weather API, ~4), ine (statistics API, ~6), ree (energy API, ~4), sepe (employment, ~2), cnmc (fuel prices, ~1)
 
 COMMON SEARCH KEYWORDS:
-embassament, sequera, aigua, qualitat aire, contaminació, transport, trànsit, pressupost, educació, salut, població, habitatge, turisme, energia, residus, comerç, seguretat, bombers, accidents, 112, emergència, trens, rodalies, renfe
+embassament, sequera, aigua, qualitat aire, contaminació, transport, trànsit, pressupost, educació, salut, població, habitatge, turisme, energia, residus, comerç, seguretat, bombers, accidents, 112, emergència, trens, rodalies, renfe, meteorologia, temps, temperatura, pluja, atur, ocupació, gasolina, carburants, PIB, IPC, electricitat, preu llum
 
 MAIN CATEGORIES:
 Medi Ambient, Economia, Educació, Salut, Seguretat, Societat-benestar, Urbanisme-infraestructures, Transport, Territori, Població, Treball, Turisme, Ciència i Tecnologia
@@ -56,11 +64,15 @@ NOTES:
 - Idescat: each dataset_id returns 1 specific indicator with value, unit, period, and time series.
 - FGC GTFS-RT: auto-decoded protobuf. vehicle-positions → GPS, alerts → Catalan text.
 - Renfe GTFS-RT: JSON real-time data for Rodalies de Catalunya. Auto-filtered to Barcelona commuter routes. Content in Spanish.
+- AEMET: weather data auto-filtered to Catalonia (~80 stations). Use filters: {"codiINE": "08019"} for Barcelona forecast.
+- INE: national statistics auto-filtered to Catalunya/Barcelona/Girona/Lleida/Tarragona series.
+- REE: electricity data (national level). Generation, demand, balance, real-time prices.
+- CNMC fuel prices: all Spanish gas stations, filter by province/municipality in results.
 - Dataset names and field names are in Catalan or Spanish — use them as-is in queries.
 - Use search_datasets only when you don't know which dataset you need.`;
 
 const server = new McpServer(
-  { name: "opendata-cat", version: "0.2.0" },
+  { name: "opendata-cat", version: "0.3.0" },
   { instructions: INSTRUCTIONS },
 );
 
@@ -70,13 +82,13 @@ server.tool(
   "Search datasets by free text. Check server instructions first: many datasets can be queried directly with query_dataset. Use search_datasets only when you don't know which dataset you need.",
   {
     query: z.string().describe("Search text in Catalan or Spanish. Examples: 'qualitat aire', 'pressupostos', 'rodalies'"),
-    portal: z.string().optional().describe("Filter by portal: 'generalitat', 'barcelona', 'diba', 'aoc', 'reus', 'girona', 'fgc', 'idescat', 'renfe'"),
+    portal: z.string().optional().describe("Filter by portal: 'generalitat', 'barcelona', 'diba', 'aoc', 'reus', 'girona', 'fgc', 'idescat', 'renfe', 'aemet', 'ine', 'ree', 'sepe', 'cnmc'"),
     category: z.string().optional().describe("Filter by thematic category"),
     limit: z.number().optional().default(20).describe("Maximum number of results (default: 20)"),
   },
   async ({ query, portal, category, limit }) => {
     const result = await searchDatasets(query, portal, category, limit);
-    const queryableTypes = new Set(["socrata", "ckan", "opendatasoft", "idescat", "diba", "diba_cido", "renfe_gtfsrt_json"]);
+    const queryableTypes = new Set(["socrata", "ckan", "opendatasoft", "idescat", "diba", "diba_cido", "renfe_gtfsrt_json", "aemet", "ine", "ree"]);
     const enriched = {
       ...result,
       items: result.items.map((item) => ({
@@ -316,6 +328,79 @@ server.tool(
             }, null, 2),
           }],
         };
+      } else if (dataset.api_type === "ine") {
+        // INE JSON API — fetch URL, filter series relevant to Catalunya
+        const ineResp = await fetch(dataset.api_endpoint);
+        const ineJson = await ineResp.json() as Array<{ Nombre?: string; Data?: Array<{ T3_Periodo?: string; Valor?: number; Anyo?: number }> }>;
+        const catKeywords = /catalun|barcelona|girona|lleida|tarragona/i;
+        const filtered = ineJson.filter((serie) => catKeywords.test(serie.Nombre ?? ""));
+        const rows: Array<Record<string, unknown>> = [];
+        for (const serie of (filtered.length > 0 ? filtered : ineJson).slice(0, 10)) {
+          const dataPoints = (serie.Data ?? []).slice(0, limit);
+          for (const dp of dataPoints) {
+            rows.push({
+              serie: serie.Nombre ?? "unknown",
+              periodo: dp.T3_Periodo ?? dp.Anyo ?? null,
+              valor: dp.Valor ?? null,
+            });
+          }
+        }
+        return {
+          content: [{
+            type: "text" as const,
+            text: JSON.stringify({
+              dataset: dataset.name,
+              portal: "INE",
+              note: filtered.length > 0 ? "Auto-filtered to Catalunya/Barcelona/Girona/Lleida/Tarragona series" : "No Catalunya filter match — showing all series",
+              count: rows.length,
+              data: rows.slice(0, limit),
+            }, null, 2),
+          }],
+        };
+      } else if (dataset.api_type === "ree") {
+        // REE API — append date params if not present
+        let reeUrl = dataset.api_endpoint;
+        if (!reeUrl.includes("start_date")) {
+          const now = new Date();
+          const end = now.toISOString().slice(0, 10) + "T23:59";
+          const startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+          const start = startDate.toISOString().slice(0, 10) + "T00:00";
+          const timeTrunc = reeUrl.includes("precios") ? "hour" : "day";
+          reeUrl += (reeUrl.includes("?") ? "&" : "?") + `start_date=${start}&end_date=${end}&time_trunc=${timeTrunc}`;
+        }
+        const reeResp = await fetch(reeUrl);
+        const reeJson = await reeResp.json() as { included?: Array<{ attributes?: { title?: string; values?: Array<{ value?: number; percentage?: number; datetime?: string }> } }> };
+        const reeData: Array<Record<string, unknown>> = [];
+        for (const item of reeJson.included ?? []) {
+          const title = item.attributes?.title ?? "unknown";
+          for (const v of (item.attributes?.values ?? []).slice(0, limit)) {
+            reeData.push({
+              indicator: title,
+              value: v.value ?? null,
+              percentage: v.percentage ?? null,
+              datetime: v.datetime ?? null,
+            });
+          }
+        }
+        return {
+          content: [{
+            type: "text" as const,
+            text: JSON.stringify({
+              dataset: dataset.name,
+              portal: "REE",
+              count: reeData.length,
+              data: reeData.slice(0, limit),
+            }, null, 2),
+          }],
+        };
+      } else if (dataset.api_type === "aemet") {
+        // AEMET requires server-side API key — redirect to HTTP server
+        return {
+          content: [{
+            type: "text" as const,
+            text: "AEMET requires an API key. Use the HTTP server at https://opendata.cat/api/mcp for AEMET queries.",
+          }],
+        };
       } else {
         return {
           content: [{
@@ -345,7 +430,7 @@ server.tool(
 // Tool 5: list_portals
 server.tool(
   "list_portals",
-  "List all 9 indexed Catalan open data portals with dataset counts.",
+  "List all 14 indexed Catalan and Spanish open data portals with dataset counts.",
   {},
   async () => {
     const portals = [
@@ -358,6 +443,11 @@ server.tool(
       { id: "fgc", name: "Ferrocarrils de la Generalitat de Catalunya", url: "https://dadesobertes.fgc.cat", api: "Opendatasoft" },
       { id: "idescat", name: "Idescat (Institut d'Estadística de Catalunya)", url: "https://www.idescat.cat", api: "Idescat API" },
       { id: "renfe", name: "Renfe (Rodalies de Catalunya)", url: "https://data.renfe.com", api: "CKAN + GTFS-RT JSON" },
+      { id: "aemet", name: "AEMET (Agència Estatal de Meteorologia)", url: "https://opendata.aemet.es", api: "AEMET OpenData REST" },
+      { id: "ine", name: "INE (Institut Nacional d'Estadística)", url: "https://www.ine.es", api: "INE JSON API" },
+      { id: "ree", name: "Red Eléctrica de España", url: "https://www.ree.es", api: "REE API REST" },
+      { id: "sepe", name: "SEPE (Servicio Público de Empleo Estatal)", url: "https://sepe.es", api: "File download" },
+      { id: "cnmc", name: "CNMC / Ministerio Transición Ecológica", url: "https://datos.gob.es", api: "REST JSON" },
     ];
 
     const cats = await getCategories();
@@ -639,7 +729,7 @@ server.prompt(
 server.prompt(
   "novetats",
   "Show the most recently updated datasets across Catalan open data portals.",
-  { portal: z.string().optional().describe("Filter by portal: generalitat, barcelona, diba, aoc, reus, girona, fgc, idescat, renfe") },
+  { portal: z.string().optional().describe("Filter by portal: generalitat, barcelona, diba, aoc, reus, girona, fgc, idescat, renfe, aemet, ine, ree, sepe, cnmc") },
   ({ portal }) => {
     const filtreText = portal ? ` on portal ${portal}` : "";
     return {
@@ -688,7 +778,7 @@ server.prompt(
 server.prompt(
   "explorar_portal",
   "Explore an open data portal: dataset count, categories, examples of each type.",
-  { portal: z.string().describe("Portal to explore: generalitat, barcelona, diba, aoc, reus, girona, fgc, idescat, renfe") },
+  { portal: z.string().describe("Portal to explore: generalitat, barcelona, diba, aoc, reus, girona, fgc, idescat, renfe, aemet, ine, ree, sepe, cnmc") },
   ({ portal }) => ({
     messages: [{
       role: "user" as const,
@@ -804,7 +894,7 @@ async function main() {
       // Health check
       if (req.url === "/health") {
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.2.0" }));
+        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.3.0" }));
         return;
       }
 
