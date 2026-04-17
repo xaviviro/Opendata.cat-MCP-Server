@@ -196,6 +196,12 @@ Documentacio interactiva (Swagger): **[opendata.cat/api/docs.html](https://opend
 
 ## Changelog
 
+### v0.3.1 (2026-04-17)
+- Handler CNMC preus carburants al paquet npm (abans nomes funcionava via HTTP)
+- Filtre per municipi i provincia: `filters: {"municipi": "Sabadell"}`
+- Per defecte retorna tota Catalunya (~1.500 gasolineres)
+- Nova og:image amb 13 portals i fonts estatals
+
 ### v0.3.0 (2026-04-16)
 - 5 noves fonts estatals espanyoles amb focus Catalunya: INE, REE, SEPE, CNMC
 - Handler INE: estadistica oficial (poblacio, IPC, EPA, turisme, PIB, habitatge) auto-filtrat a Catalunya
