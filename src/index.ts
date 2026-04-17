@@ -72,7 +72,7 @@ NOTES:
 - Use search_datasets only when you don't know which dataset you need.`;
 
 const server = new McpServer(
-  { name: "opendata-cat", version: "0.3.0" },
+  { name: "opendata-cat", version: "0.3.1" },
   { instructions: INSTRUCTIONS },
 );
 
@@ -88,7 +88,7 @@ server.tool(
   },
   async ({ query, portal, category, limit }) => {
     const result = await searchDatasets(query, portal, category, limit);
-    const queryableTypes = new Set(["socrata", "ckan", "opendatasoft", "idescat", "diba", "diba_cido", "renfe_gtfsrt_json", "aemet", "ine", "ree"]);
+    const queryableTypes = new Set(["socrata", "ckan", "opendatasoft", "idescat", "diba", "diba_cido", "renfe_gtfsrt_json", "aemet", "ine", "ree", "cnmc"]);
     const enriched = {
       ...result,
       items: result.items.map((item) => ({
@@ -399,6 +399,78 @@ server.tool(
           content: [{
             type: "text" as const,
             text: "AEMET requires an API key. Use the HTTP server at https://opendata.cat/api/mcp for AEMET queries.",
+          }],
+        };
+      } else if (dataset.api_type === "cnmc") {
+        // CNMC fuel prices — REST API with filters by CCAA/province/municipality
+        const base = "https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/EstacionesTerrestres";
+        const provMap: Record<string, string> = { barcelona: "08", girona: "17", lleida: "25", tarragona: "43" };
+        const provincia = filters?.provincia || filters?.Provincia || "";
+        const municipi = filters?.municipi || filters?.municipio || filters?.Municipio || "";
+
+        let url: string;
+        if (municipi) {
+          // Look up municipality ID
+          const provId = provincia ? (provMap[provincia.toLowerCase()] || provincia) : "08";
+          const provIds = provincia ? [provId] : ["08", "17", "25", "43"];
+          let muniId = "";
+          for (const pid of provIds) {
+            const muniResp = await fetch(`https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/Listados/MunicipiosPorProvincia/${pid}`);
+            const munis = await muniResp.json() as Array<Record<string, string>>;
+            const found = munis.find((m) => (m.Municipio || "").toLowerCase().includes(municipi.toLowerCase()));
+            if (found) { muniId = found.IDMunicipio; break; }
+          }
+          url = muniId ? `${base}/FiltroMunicipio/${muniId}` : `${base}/FiltroCCAA/09`;
+        } else if (provincia) {
+          const provId = provMap[provincia.toLowerCase()] || provincia;
+          url = `${base}/FiltroProvincia/${provId}`;
+        } else {
+          url = `${base}/FiltroCCAA/09`; // Default: Catalunya
+        }
+
+        const cnmcResp = await fetch(url, { headers: { "User-Agent": "opendata.cat MCP" } });
+        const cnmcJson = await cnmcResp.json() as { Fecha?: string; ListaEESSPrecio?: Array<Record<string, string>> };
+        if (!cnmcJson.ListaEESSPrecio) {
+          return { content: [{ type: "text" as const, text: "Error fetching fuel prices" }] };
+        }
+
+        let stations = cnmcJson.ListaEESSPrecio;
+        if (search) {
+          stations = stations.filter((s) => {
+            const combined = `${s.Municipio || ""} ${s["Rótulo"] || ""} ${s["Dirección"] || ""}`;
+            return combined.toLowerCase().includes(search.toLowerCase());
+          });
+        }
+
+        const total = stations.length;
+        const sliced = stations.slice(offset, offset + limit);
+        const data = sliced.map((s) => ({
+          gasolinera: s["Rótulo"] || "",
+          direccio: s["Dirección"] || "",
+          municipi: s.Municipio || "",
+          provincia: s.Provincia || "",
+          cp: s["C.P."] || "",
+          gasolina_95: s["Precio Gasolina 95 E5"] || "",
+          gasolina_98: s["Precio Gasolina 98 E5"] || "",
+          diesel: s["Precio Gasoleo A"] || "",
+          diesel_premium: s["Precio Gasoleo Premium"] || "",
+          horari: s.Horario || "",
+          latitud: s.Latitud || "",
+          longitud: s["Longitud (WGS84)"] || "",
+        }));
+
+        return {
+          content: [{
+            type: "text" as const,
+            text: JSON.stringify({
+              dataset: dataset.name,
+              source: "CNMC / Ministerio para la Transición Ecológica",
+              fecha: cnmcJson.Fecha || "",
+              filter: municipi || provincia || "Catalunya (CCAA 09)",
+              total,
+              count: data.length,
+              data,
+            }, null, 2),
           }],
         };
       } else {
@@ -894,7 +966,7 @@ async function main() {
       // Health check
       if (req.url === "/health") {
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.3.0" }));
+        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.3.1" }));
         return;
       }
 
