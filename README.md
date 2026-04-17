@@ -12,40 +12,52 @@
 
 # Opendata.cat MCP Server
 
-Servidor [MCP](https://modelcontextprotocol.io/) (Model Context Protocol) que connecta els models de llenguatge (Claude, ChatGPT, Gemini...) amb les **dades obertes publiques de Catalunya**. Cerca datasets, explora metadades i consulta dades reals de 8 portals catalans directament des del teu assistent d'IA.
+Servidor [MCP](https://modelcontextprotocol.io/) (Model Context Protocol) que connecta els models de llenguatge (Claude, ChatGPT, Gemini...) amb les **dades obertes publiques de Catalunya**. Cerca datasets, explora metadades i consulta dades reals de 13 portals directament des del teu assistent d'IA.
 
 Un projecte d'**[opendata.cat](https://opendata.cat)** — associacio sense anim de lucre fundada el 2012 que promou la transparencia, la difusio i l'estandarditzacio de les dades obertes a Catalunya. Inspirat en el projecte [datagouv-mcp](https://github.com/datagouv/datagouv-mcp) del govern frances.
 
 ## Portals disponibles
 
-| Portal | Datasets | APIs |
-|--------|----------|------|
-| [Generalitat de Catalunya](https://analisi.transparenciacatalunya.cat) | 1.058 | Socrata (SoQL) |
+### Portals catalans
+
+| Portal | Datasets | API |
+|--------|----------|-----|
+| [Generalitat de Catalunya](https://analisi.transparenciacatalunya.cat) | 1.059 | Socrata (SoQL) |
+| [Consorci AOC](https://dadesobertes.seu-e.cat) | ~887 | CKAN datastore |
 | [Ajuntament de Barcelona](https://opendata-ajuntament.barcelona.cat) | 555 | CKAN datastore |
-| [Diputacio de Barcelona](https://dadesobertes.diba.cat) | 90 | REST + JSON:API (CIDO) |
-| [Consorci AOC](https://dadesobertes.seu-e.cat) | ~893 | CKAN datastore |
-| [Ajuntament de Reus](https://opendata.reus.cat) | 119 | CKAN datastore |
-| [Ajuntament de Girona](https://www.girona.cat/opendata/) | 53 | CKAN datastore |
-| [FGC (Ferrocarrils)](https://dadesobertes.fgc.cat) | 50 | Opendatasoft |
 | [Idescat](https://www.idescat.cat) | 138 | Idescat API |
+| [Ajuntament de Reus](https://opendata.reus.cat) | 119 | CKAN datastore |
+| [Diputacio de Barcelona](https://dadesobertes.diba.cat) | 90 | REST + JSON:API (CIDO) |
+| [Ajuntament de Girona](https://www.girona.cat/opendata/) | 53 | CKAN datastore |
+| [FGC (Ferrocarrils)](https://dadesobertes.fgc.cat) | 50 | Opendatasoft + GTFS-RT |
+| [Renfe Rodalies](https://data.renfe.com) | 6 | CKAN + GTFS-RT JSON |
 
-El Consorci AOC inclou datasets de les **diputacions de Tarragona, Girona i Lleida**, ajuntaments, consells comarcals i altres organismes publics catalans. Idescat proporciona indicadors estadistics de Catalunya (poblacio, economia, treball, salut...) amb series temporals.
+### Fonts estatals amb focus Catalunya
 
-**+2.800 datasets** de 8 portals. La majoria queryables amb filtres, cerca i paginacio.
+| Font | Datasets | Que aporta |
+|------|----------|-----------|
+| [INE](https://www.ine.es) | 6 | Poblacio, IPC, EPA (atur/ocupacio), turisme, PIB, habitatge — auto-filtrat a Catalunya |
+| [Red Electrica (REE)](https://www.ree.es) | 4 | Generacio electrica (mix energetic), demanda, balanc, preus PVPC temps real |
+| [SEPE](https://sepe.es) | 2 | Atur registrat i contractes per municipis catalans |
+| [CNMC / Ministeri](https://datos.gob.es) | 1 | Preus carburants a ~1.500 gasolineres de Catalunya, filtrables per municipi |
 
-El cataleg s'actualitza automaticament cada setmana. Cada endpoint es valida per assegurar que funciona.
+**+2.850 datasets** de 13 portals. La majoria queryables amb filtres, cerca i paginacio.
+
+El cataleg s'actualitza automaticament cada setmana. Crawling incremental amb `--portal` per carregar fonts noves sense re-escanejar tot.
 
 **Tipus d'acces:**
 - **Socrata**: consulta SoQL amb filtres i cerca (Generalitat)
-- **CKAN**: datastore_search amb filtres i cerca (Barcelona, AOC, Reus, Girona)
+- **CKAN**: datastore_search amb filtres i cerca (Barcelona, AOC, Reus, Girona, Renfe)
 - **Diba REST**: API do.diba.cat amb paginacio i filtres (Diputacio BCN)
-- **CIDO JSON:API**: api.diba.cat per contractacions, normatives, subvencions, oposicions, convenis (Diputacio BCN)
-- **Opendatasoft**: API records amb filtres i cerca (FGC — horaris GTFS, trens temps real, estacions esqui)
-- **GTFS-RT**: decodificacio automatica de Protocol Buffers — posicions GPS, alertes i retards dels trens FGC en temps real
-- **Idescat**: indicadors estadistics amb series temporals (poblacio, economia, treball, salut, educacio)
-- **GIS**: simplificacio automatica de geometries (centroide + bbox en lloc de milers de coordenades)
-- **Dades municipals AOC**: 9 datasets centralitzats amb dades de +1.000 municipis, filtrables per NOM_ENS
-- **File download**: descarrega directa de CSV, JSON, XLSX
+- **CIDO JSON:API**: api.diba.cat per contractacions, normatives, subvencions (Diputacio BCN)
+- **Opendatasoft**: API records amb filtres i cerca (FGC)
+- **GTFS-RT**: posicions GPS, alertes i retards dels trens FGC i Renfe Rodalies en temps real
+- **Idescat**: indicadors estadistics amb series temporals
+- **INE**: estadistica oficial d'Espanya filtrada automaticament a Catalunya
+- **REE**: generacio electrica, demanda i preus de l'electricitat (PVPC) en temps real
+- **CNMC**: preus de carburants per estacio de servei, filtrables per CCAA/provincia/municipi
+- **GIS**: simplificacio automatica de geometries (centroide + bbox)
+- **Dades municipals AOC**: 9 datasets amb dades de +1.000 municipis, filtrables per NOM_ENS
 
 ## Installacio rapida
 
@@ -85,15 +97,25 @@ Afegeix al fitxer `.vscode/mcp.json` del teu projecte:
 }
 ```
 
+### Windsurf / Cline / JetBrains / Gemini CLI / Warp / ChatGPT / Copilot Studio
+
+Consulta la guia completa amb instruccions per a **13 clients MCP** a **[opendata.cat/mcp](https://opendata.cat/mcp)**.
+
+Tambe pots connectar directament via **Streamable HTTP** sense instal·lar res:
+
+```
+https://opendata.cat/api/mcp
+```
+
 ## Tools disponibles
 
 | Tool | Descripcio |
 |------|-----------|
-| `search_datasets` | Cerca datasets per text lliure al cataleg |
+| `search_datasets` | Cerca datasets per text lliure al cataleg de +2.850 datasets |
 | `get_dataset_info` | Retorna metadades completes: camps, tipus, llicencia, endpoint |
 | `list_dataset_fields` | Llista els camps d'un dataset amb nom, tipus i descripcio |
 | `query_dataset` | Consulta dades reals directament al portal origen |
-| `list_portals` | Llista els portals disponibles amb estadistiques |
+| `list_portals` | Llista els 13 portals disponibles amb estadistiques |
 | `list_categories` | Llista categories i temes disponibles amb comptadors |
 | `related_datasets` | Retorna datasets relacionats d'altres portals |
 
@@ -103,25 +125,9 @@ Cerca datasets per text lliure.
 
 ```
 query: "qualitat aire"
-portal: "barcelona"        # opcional: generalitat, barcelona, diba, aoc, reus, girona, fgc
+portal: "barcelona"        # opcional: generalitat, barcelona, diba, aoc, reus, girona, fgc, idescat, renfe, ine, ree, sepe, cnmc
 category: "Medi Ambient"   # opcional
 limit: 20                  # opcional (defecte: 20)
-```
-
-### get_dataset_info
-
-Retorna totes les metadades d'un dataset.
-
-```
-dataset_id: "generalitat:gn9e-3qhr"
-```
-
-### list_dataset_fields
-
-Llista els camps d'un dataset amb nom, tipus i descripcio.
-
-```
-dataset_id: "generalitat:gn9e-3qhr"
 ```
 
 ### query_dataset
@@ -136,28 +142,26 @@ limit: 20                     # opcional (defecte: 20, max: 100)
 offset: 0                     # opcional
 ```
 
-### list_portals
-
-Llista els portals disponibles amb el nombre de datasets de cadascun. No requereix parametres.
-
-### list_categories
-
-Llista totes les categories i temes de datasets disponibles amb comptadors per portal. Ideal per descobrir quins tipus de dades hi ha.
+Exemples de filtres per fonts estatals:
+- INE: auto-filtrat a Catalunya (poblacio, IPC, turisme...)
+- REE: `ree:preus-electricitat` — preus PVPC per hora
+- CNMC: `filters: {"municipi": "Sabadell"}` — gasolineres de Sabadell
 
 ## Exemples d'us
 
 Un cop configurat, pots fer preguntes al teu LLM com:
 
 - *"Quin es l'estat dels embassaments de Catalunya?"*
-- *"Hi ha algun tren de FGC amb retard ara mateix?"*
-- *"Quina es la poblacio de Catalunya? I l'atur?"*
+- *"Hi ha algun tren de Rodalies o FGC amb retard ara mateix?"*
+- *"Quina es la poblacio de Catalunya segons l'INE?"*
+- *"Quin es el preu de la gasolina a Sabadell avui?"*
+- *"Quant costa l'electricitat ara? (PVPC)"*
 - *"Analitza la qualitat de l'aire a Terrassa"*
+- *"Quina es la taxa d'atur a Catalunya?"*
+- *"Quantes pernoctacions turistiques hi ha a Barcelona?"*
 - *"Compara Girona i Tarragona en dades obertes"*
-- *"Quines dades obertes hi ha sobre educacio a Catalunya?"*
 - *"Dona'm les ultimes dades de pressupostos de Reus"*
-- *"Tenim informacio d'actuacions de bombers o del 112?"*
 - *"Quin es l'endeutament de Tiana?"*
-- *"Quina es la poblacio de Catalunya?"*
 
 ## Com funciona
 
@@ -167,106 +171,66 @@ Usuari → LLM → MCP opendata.cat → API opendata.cat (cataleg)
 ```
 
 1. L'MCP consulta l'[API d'opendata.cat](https://opendata.cat) per descobrir datasets rellevants
-2. Quan l'usuari vol dades concretes, l'MCP fa la consulta directament al portal origen (Socrata o CKAN)
+2. Quan l'usuari vol dades concretes, l'MCP fa la consulta directament al portal origen
 3. Les dades tornen a l'LLM, que les interpreta i presenta a l'usuari
 
 No emmagatzema ni fa de proxy de dades. Cada consulta va directament a la font oficial.
 
 ## API REST
 
-A mes del servidor MCP, opendata.cat ofereix una API REST publica per accedir al cataleg de datasets:
+A mes del servidor MCP, opendata.cat ofereix una API REST publica:
 
 | Endpoint | Descripcio |
 |----------|-----------|
+| `GET /api/all-datasets.php` | Llistat complet amb paginacio, filtres i sort |
 | `GET /api/datasets.php?q=...` | Cerca datasets per text lliure |
 | `GET /api/dataset.php?id=...` | Detall complet d'un dataset |
 | `GET /api/categories.php` | Categories i portals amb comptadors |
-| `GET /api/portals.php` | Portals de transparencia (1.769) |
-| `GET /api/stats.php` | Estadistiques agregades |
-| `GET /api/mcp-stats.php` | Metriques d'us del MCP |
 | `POST /api/mcp` | Servidor MCP (Streamable HTTP) |
 
 Documentacio interactiva (Swagger): **[opendata.cat/api/docs.html](https://opendata.cat/api/docs.html)**
 
-Especificacio OpenAPI: [`opendata.cat/api/openapi.json`](https://opendata.cat/api/openapi.json)
-
 ## Sobre opendata.cat
 
-[opendata.cat](https://opendata.cat) es una associacio catalana sense anim de lucre fundada el 2012 (registre 47468) dedicada a promoure la transparencia i l'acces a la informacio publica. Treballa en tres eixos: **estandarditzacio** de formats i protocols, **formacio** especialitzada per a professionals i administracions, i **collaboracio** publico-privada per a l'obertura de dades.
-
-## Contribuir
-
-Les contribucions son benvingudes! Per afegir un nou portal de dades obertes:
-
-1. Obre una [issue](https://github.com/xaviviro/Opendata.cat-MCP-Server/issues) amb la URL del portal i el tipus d'API
-2. O envia un pull request
+[opendata.cat](https://opendata.cat) es una associacio catalana sense anim de lucre fundada el 2012 (registre 47468) dedicada a promoure la transparencia i l'acces a la informacio publica.
 
 ## Changelog
 
+### v0.3.0 (2026-04-16)
+- 5 noves fonts estatals espanyoles amb focus Catalunya: INE, REE, SEPE, CNMC
+- Handler INE: estadistica oficial (poblacio, IPC, EPA, turisme, PIB, habitatge) auto-filtrat a Catalunya
+- Handler REE: generacio electrica, demanda, balanc, preus PVPC en temps real
+- Handler CNMC: preus carburants amb filtres per CCAA/provincia/municipi via API REST
+- Crawler incremental: flag `--portal` per carregar fonts noves sense re-escanejar tot
+- 13 portals, 2.857 datasets
+
+### v0.2.0 (2026-04-15)
+- Nou portal Renfe (Rodalies de Catalunya) — 6 datasets (estacions, viatgers, GTFS-RT temps real)
+- Handler GTFS-RT JSON amb filtre automatic a rutes Rodalies Barcelona (R1-R16, RT, RG, RL)
+- Instruccions reescrites en angles per millorar comprensio dels LLMs
+- Llistats de portals, keywords i categories a les instruccions
+- Tool descriptions i prompts traduits a angles
+- Nou prompt trens_rodalies_temps_real
+
 ### v0.1.2 (2026-04-14)
 - Instructions integrades: l'LLM rep datasets destacats i pot fer query directe sense cercar
-- Fix Idescat: ara retorna l'indicador especific (poblacio = 8.154.627) en lloc de 6 aleatoris
-- 9 datasets municipals centralitzats AOC: pressupostos, cost serveis, endeutament de +1.000 municipis
-- Notes a les instructions: com filtrar Socrata, CKAN (NOM_ENS), particularitats de cada portal
-- Neteja scoring del search: sense camps interns (relevance, name_boost) al response
-- Ranking: boost per datasets queryables (Socrata/CKAN primer, file_download despres)
+- Fix Idescat: ara retorna l'indicador especific en lloc de 6 aleatoris
+- 9 datasets municipals AOC: pressupostos, cost serveis, endeutament de +1.000 municipis
 
 ### v0.1.0 (2026-04-14)
-- Nou portal Idescat (Institut d'Estadistica de Catalunya) — 138 indicadors estadistics
-- Client Idescat amb series temporals (poblacio, PIB, atur, inflacio, educacio, salut...)
-- Millora ranking de cerca: datasets amb el terme al nom surten primer
-- Sinonims ampliats: emergencies (112, SEM, ambulancia, bombers, mossos)
+- Nou portal Idescat — 138 indicadors estadistics amb series temporals
+- Portals Reus i Girona
 
 ### v0.0.17 (2026-04-14)
-- Simplificacio automatica de geometries GIS: centroide + bounding box en lloc de milers de coordenades
-- Decodificador GTFS-RT integrat: trens FGC en temps real (retards, alertes, posicions GPS)
-- Descodifica automaticament fitxers Protocol Buffers (.pb) de GTFS Realtime
-- API REST documentada amb Swagger UI a /api/docs.html (OpenAPI 3.1)
-- Instruccions per a models locals: LM Studio, Ollama (MCPHost) i Jan
-- Recomanacions de models oberts en catala (Softcatala): Qwen 3.5 9B, Gemma 3 12B
-
-### v0.0.12 (2026-04-13)
-- 14 prompts predefinits (8 analisi + 6 descobriment)
-- Nous prompts: novetats, datasets_populars, explorar_portal, dades_municipi, datasets_temps_real, resum_portals
-- Crawler incremental: UPSERT en lloc de TRUNCATE, no perd dades si un portal falla
-- Backup automatic despres de cada carrega
+- Decodificador GTFS-RT integrat: trens FGC en temps real
+- API REST documentada amb Swagger UI (OpenAPI 3.1)
 
 ### v0.0.10 (2026-04-13)
-- Afegeix portal FGC (Ferrocarrils de la Generalitat de Catalunya) — 50 datasets via Opendatasoft
-- Nou client Opendatasoft per consultar dades de transport, esqui, meteorologia, GTFS
-- list_portals ara llista els 7 portals (abans nomes 3)
-- Fix seguretat: validacio de claus de filtre SoQL contra injeccio
-- Cobertura total: ~2.800 datasets de 7 portals
-
-### v0.0.7 (2026-04-13)
-- Afegeix portal Consorci AOC (~893 datasets de diputacions, ajuntaments, consells comarcals)
-- Cobertura total: ~2.600 datasets, ~2.400 queryables
-- Inclou dades de les diputacions de Tarragona, Girona i Lleida
-
-### v0.0.6 (2026-04-12)
-- Afegeix client CIDO (api.diba.cat) per contractacions, normatives, subvencions, oposicions, convenis
-- Camps filtables reals extrets automaticament per cada endpoint CIDO
-
-### v0.0.5 (2026-04-12)
-- Gestio correcta de datasets no queryables (file_download, restricted)
-- Retorna URL directa en comptes d'error quan un dataset no te API
-
-### v0.0.4 (2026-04-12)
-- Audit complet Barcelona i Diba: api_types correctes per cada dataset
-- Barcelona: resource_id real via package_show (463 queryables)
-- Diba: REST (do.diba.cat) + CIDO (api.diba.cat) + file_download
-- Validador d'endpoints a /api/validate.php
-
-### v0.0.3 (2026-04-12)
-- Afegeix client Diba (do.diba.cat REST API) amb paginacio i filtres
-
-### v0.0.2 (2026-04-12)
-- Afegeix referencia al projecte datagouv-mcp del govern frances
+- Portal FGC (50 datasets via Opendatasoft)
+- 14 prompts predefinits
 
 ### v0.0.1 (2026-04-12)
-- Versio inicial: 3 portals (Generalitat, Barcelona, Diba)
-- 6 tools: search_datasets, get_dataset_info, list_dataset_fields, query_dataset, list_portals, list_categories
-- Publicat a npm com @opendata.cat/mcp-server
+- Versio inicial: Generalitat, Barcelona, Diba, AOC — 6 tools, npm
 
 ## Llicencia
 
