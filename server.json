@@ -1,17 +1,17 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.xaviviro/opendata-cat",
-  "description": "Query 2,800+ Catalan open datasets from 9 portals. Real-time trains, budgets and more.",
+  "description": "Query 2,800+ Catalan open datasets from 13 portals. Real-time trains, budgets and more.",
   "repository": {
     "url": "https://github.com/xaviviro/Opendata.cat-MCP-Server",
     "source": "github"
   },
-  "version": "0.2.0",
+  "version": "0.3.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@opendata.cat/mcp-server",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "transport": {
         "type": "stdio"
       }
