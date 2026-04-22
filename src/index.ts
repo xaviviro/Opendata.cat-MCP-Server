@@ -69,7 +69,7 @@ NOTES:
 - Use search_datasets only when you don't know which dataset you need.`;
 
 const server = new McpServer(
-  { name: "opendata-cat", version: "0.3.2" },
+  { name: "opendata-cat", version: "0.3.3" },
   { instructions: INSTRUCTIONS },
 );
 
@@ -551,7 +551,8 @@ server.tool(
       return { content: [{ type: "text" as const, text: "Error obtenint relacions." }] };
     }
     const full = await resp.json();
-    const related = full.related ?? [];
+    let related = full.related ?? [];
+    if (typeof related === "string") { try { related = JSON.parse(related); } catch { related = []; } }
     if (!related.length) {
       return { content: [{ type: "text" as const, text: `No hi ha datasets relacionats per a '${dataset.name}'.` }] };
     }
@@ -954,7 +955,7 @@ async function main() {
       // Health check
       if (req.url === "/health") {
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.3.2" }));
+        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.3.3" }));
         return;
       }
 
