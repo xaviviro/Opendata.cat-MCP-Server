@@ -6,12 +6,12 @@
     "url": "https://github.com/xaviviro/Opendata.cat-MCP-Server",
     "source": "github"
   },
-  "version": "0.3.3",
+  "version": "0.3.4",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@opendata.cat/mcp-server",
-      "version": "0.3.3",
+      "version": "0.3.4",
       "transport": {
         "type": "stdio"
       }

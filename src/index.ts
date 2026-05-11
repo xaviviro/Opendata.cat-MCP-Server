@@ -69,7 +69,7 @@ NOTES:
 - Use search_datasets only when you don't know which dataset you need.`;
 
 const server = new McpServer(
-  { name: "opendata-cat", version: "0.3.3" },
+  { name: "opendata-cat", version: "0.3.4" },
   { instructions: INSTRUCTIONS },
 );
 
@@ -85,7 +85,7 @@ server.tool(
   },
   async ({ query, portal, category, limit }) => {
     const result = await searchDatasets(query, portal, category, limit);
-    const queryableTypes = new Set(["socrata", "ckan", "opendatasoft", "idescat", "diba", "diba_cido", "renfe_gtfsrt_json", "ine", "ree", "cnmc"]);
+    const queryableTypes = new Set(["socrata", "ckan", "opendatasoft", "idescat", "diba", "diba_cido", "renfe_gtfsrt_json", "ine", "ree", "cnmc", "ckan_opendata"]);
     const enriched = {
       ...result,
       items: result.items.map((item) => ({
@@ -390,7 +390,7 @@ server.tool(
             }, null, 2),
           }],
         };
-      } else if (dataset.api_type === "cnmc") {
+      } else if (dataset.api_type === "cnmc", "ckan_opendata") {
         // CNMC fuel prices — REST API with filters by CCAA/province/municipality
         const base = "https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/EstacionesTerrestres";
         const provMap: Record<string, string> = { barcelona: "08", girona: "17", lleida: "25", tarragona: "43" };
@@ -462,6 +462,37 @@ server.tool(
             }, null, 2),
           }],
         };
+      } else if (dataset.api_type === "ckan_opendata") {
+        // Our own CKAN Datastore (CORA datasets)
+        let url = dataset.api_endpoint;
+        const sep = url.includes("?") ? "&" : "?";
+        const parts: string[] = [];
+        if (filters) {
+          const { order, ...rest } = filters;
+          for (const [k, v] of Object.entries(rest)) parts.push(`${encodeURIComponent(k)}=${encodeURIComponent(v)}`);
+          if (order) parts.push(`sort=${encodeURIComponent(order)}`);
+        }
+        if (search) parts.push(`q=${encodeURIComponent(search)}`);
+        parts.push(`limit=${limit}`, `offset=${offset}`);
+        url += sep + parts.join("&");
+
+        const resp = await fetch(url);
+        const json = await resp.json() as { success?: boolean; result?: { records?: Array<Record<string, unknown>>; total?: number } };
+        if (!json.success || !json.result) {
+          return { content: [{ type: "text" as const, text: "Error querying CKAN datastore" }] };
+        }
+        return {
+          content: [{
+            type: "text" as const,
+            text: JSON.stringify({
+              dataset: dataset.name,
+              source: "opendata.cat CKAN Datastore",
+              total: json.result.total ?? 0,
+              count: (json.result.records ?? []).length,
+              data: json.result.records ?? [],
+            }, null, 2),
+          }],
+        };
       } else {
         return {
           content: [{
@@ -508,6 +539,7 @@ server.tool(
       { id: "ree", name: "Red Eléctrica de España", url: "https://www.ree.es", api: "REE API REST" },
       { id: "sepe", name: "SEPE (Servicio Público de Empleo Estatal)", url: "https://sepe.es", api: "File download" },
       { id: "cnmc", name: "CNMC / Ministerio Transición Ecológica", url: "https://datos.gob.es", api: "REST JSON" },
+      { id: "cora", name: "CORA (Repositori de Dades de Recerca - CSUC)", url: "https://dataverse.csuc.cat", api: "CKAN Datastore" },
     ];
 
     const cats = await getCategories();
@@ -955,7 +987,7 @@ async function main() {
       // Health check
       if (req.url === "/health") {
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.3.3" }));
+        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.3.4" }));
         return;
       }
 
