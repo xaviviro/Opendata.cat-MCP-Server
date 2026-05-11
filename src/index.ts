@@ -69,7 +69,7 @@ NOTES:
 - Use search_datasets only when you don't know which dataset you need.`;
 
 const server = new McpServer(
-  { name: "opendata-cat", version: "0.3.4" },
+  { name: "opendata-cat", version: "0.3.5" },
   { instructions: INSTRUCTIONS },
 );
 
@@ -390,7 +390,7 @@ server.tool(
             }, null, 2),
           }],
         };
-      } else if (dataset.api_type === "cnmc", "ckan_opendata") {
+      } else if (dataset.api_type === "cnmc") {
         // CNMC fuel prices — REST API with filters by CCAA/province/municipality
         const base = "https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/EstacionesTerrestres";
         const provMap: Record<string, string> = { barcelona: "08", girona: "17", lleida: "25", tarragona: "43" };
@@ -987,7 +987,7 @@ async function main() {
       // Health check
       if (req.url === "/health") {
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.3.4" }));
+        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.3.5" }));
         return;
       }
 
