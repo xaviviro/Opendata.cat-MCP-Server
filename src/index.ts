@@ -40,6 +40,17 @@ FEATURED DATASETS (use query_dataset directly, no search needed):
 - idescat:m10234 → Confiança empresarial (business confidence)
 - barcelona:accidents-gu-bcn → Accidents gestionats per la Guàrdia Urbana BCN (police-managed accidents)
 
+CORA RESEARCH DATA (academic datasets via CKAN datastore):
+- cora:electoral-1936 → 1936 Spanish elections at municipal level: votes by coalition (left/right/center), turnout, 8,560 municipalities including 1,065 in Catalonia
+- cora:airbnb-bcn-demografia → Barcelona census-section demographics (population by age, foreigners) linked to Airbnb impact study
+- cora:airbnb-bcn-adreces → 1,918 Airbnb-style tourist rentals in Barcelona with GPS coordinates
+- cora:cova-gran-2025 → Cova Gran (Lleida) archaeological inventory: 5,573 finds (bones, lithic, ceramic) with stratigraphic levels and XYZ coordinates
+- cora:polat-panel → POLAT 12-wave political-attitudes panel of Spain (2010-2020): 20,991 obs, 106 key variables (trust, vote, ideology, populism)
+- cora:populistes-espanya → Populist Attitudes Survey Spain 2018: 3,031 respondents, 173 variables (populism, emotions, personality, ideology)
+- cora:vulnyouth-espanya → VulnYouth: precarious youth in Spain 2023: 3,013 young people (20-34), 138 variables (labour precariousness, WHO-5 mental health, housing)
+- cora:covid-normes-espanya → COVID-19 Social Norms Spain 2020: 4,523 responses during lockdown on compliance, informal sanctions, risk perception (62 variables)
+- cora:depcura-bcn → Care & Dependency Barcelona 2020: 1,600 people aged 65+ with functional dependency, 639 variables on care strategies and social services
+
 MUNICIPAL DATA (filter by NOM_ENS with query_dataset):
 - aoc:ge-ge-cost-efectiu-serveis-minhap → Cost dels serveis de +1,000 municipis (municipal service costs)
 - aoc:ge-p-pressupostos-i-plantilles → Pressupostos i plantilles municipals (budgets & staffing)
@@ -48,7 +59,7 @@ MUNICIPAL DATA (filter by NOM_ENS with query_dataset):
 - aoc:ge-ge-termini-pagament-proveidors → Payment terms to suppliers
 
 AVAILABLE PORTALS:
-generalitat (Socrata, ~1059), aoc (CKAN, ~887), barcelona (CKAN, ~555), idescat (API, ~138), reus (CKAN, ~119), diba (REST+CIDO, ~90), girona (CKAN, ~53), fgc (ODS+GTFS-RT, ~50), renfe (CKAN+GTFS-RT, ~6), ine (statistics API, ~6), ree (energy API, ~4), sepe (employment, ~2), cnmc (fuel prices, ~1)
+generalitat (Socrata, ~1063), aoc (CKAN, ~894), barcelona (CKAN, ~555), idescat (API, ~138), reus (CKAN, ~119), diba (REST+CIDO, ~91), girona (CKAN, ~53), fgc (ODS+GTFS-RT, ~50), cora (CKAN Datastore, 9 academic), ine (statistics API, ~6), renfe (CKAN+GTFS-RT, ~6), ree (energy API, ~4), sepe (employment, ~2), cnmc (fuel prices, ~1)
 
 COMMON SEARCH KEYWORDS:
 embassament, sequera, aigua, qualitat aire, contaminació, transport, trànsit, pressupost, educació, salut, població, habitatge, turisme, energia, residus, comerç, seguretat, bombers, accidents, 112, emergència, trens, rodalies, renfe, meteorologia, temps, temperatura, pluja, atur, ocupació, gasolina, carburants, PIB, IPC, electricitat, preu llum
@@ -65,11 +76,12 @@ NOTES:
 - INE: national statistics auto-filtered to Catalunya/Barcelona/Girona/Lleida/Tarragona series.
 - REE: electricity data (national level). Generation, demand, balance, real-time prices.
 - CNMC fuel prices: all Spanish gas stations, filter by province/municipality in results.
+- CORA datasets: CKAN-compatible datastore. Filter by any field (case-insensitive). Survey datasets use coded values. Wave-based panels (polat) have field 'wave'. Use list_dataset_fields to see all columns.
 - Dataset names and field names are in Catalan or Spanish — use them as-is in queries.
 - Use search_datasets only when you don't know which dataset you need.`;
 
 const server = new McpServer(
-  { name: "opendata-cat", version: "0.3.5" },
+  { name: "opendata-cat", version: "0.3.6" },
   { instructions: INSTRUCTIONS },
 );
 
@@ -987,7 +999,7 @@ async function main() {
       // Health check
       if (req.url === "/health") {
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.3.5" }));
+        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.3.6" }));
         return;
       }
 
