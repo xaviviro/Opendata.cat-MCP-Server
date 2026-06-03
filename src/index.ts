@@ -51,23 +51,29 @@ CORA RESEARCH DATA (academic datasets via CKAN datastore):
 - cora:covid-normes-espanya → COVID-19 Social Norms Spain 2020: 4,523 responses during lockdown on compliance, informal sanctions, risk perception (62 variables)
 - cora:depcura-bcn → Care & Dependency Barcelona 2020: 1,600 people aged 65+ with functional dependency, 639 variables on care strategies and social services
 
-CATALÒNICA DIGITAL HERITAGE (Biblioteca de Catalunya aggregator via OAI-PMH, ~2.2M cultural objects across 39 sets — use query_dataset with q for full-text search):
-- catalonica:mnac → Museu Nacional d'Art de Catalunya (paintings, drawings, sculptures)
-- catalonica:arca → Arxiu de Revistes Catalanes Antigues (historical Catalan magazines)
-- catalonica:mdc → Memòria Digital de Catalunya (heritage aggregator)
-- catalonica:raco → Revistes Catalanes amb Accés Obert (open-access journals)
-- catalonica:tdx → Tesis Doctorals en Xarxa (Catalan doctoral theses)
-- catalonica:bipadi → Biblioteca Patrimonial Digital UB
-- catalonica:cartoteca → Cartoteca Digital (maps)
-- catalonica:corpusliterari → Corpus Literari Digital
-- catalonica:hcc → Hemeroteca Científica Catalana
-- catalonica:reus → Hemeroteca Reus (historical local press)
-- catalonica:repositori_filmoteca → Catalan Filmoteca digital repository
-- catalonica:iei → Institut d'Estudis Ilerdencs
-- catalonica:arxiuparaula → Arxiu de la Paraula de l'Ateneu Barcelonès (oral archive)
-- catalonica:bilderatlas → Bilderatlas.net image archive
-- (also: bcnroc, calaix, regira, dd, trencadis, dugidocs, dugife, dugimedia, rcub, rde, upcommons, o2uoc, drac, e-repositori, udlfonsespecials, udlobert, dddua, rd_tecnocampus, uivic, maco, ...)
-Fields per record: title, creator, publisher, date, type, subject, description, language, url_resource, url_catalonica, rights. Filter examples: {q: 'Picasso'}, {creator: 'Ramon Casas'}, {language: 'cat'}.
+CATALÒNICA DIGITAL HERITAGE (Biblioteca de Catalunya — live search guide, NOT indexed):
+Use query_dataset('catalonica:<set>', search='<text>') to get a SEARCH GUIDE: native subportal URL pre-filled with the query, aggregator fallback URL, plus topic hints (content_type, best_for, languages, search_examples). Catalònica has no JSON API; direct the user to search_url_native or search_url_aggregator. DO NOT fabricate records.
+Pick the subportal by topic:
+- catalonica:tdx → Tesis Doctorals en Xarxa (doctoral theses by author, supervisor, university, topic)
+- catalonica:raco → Revistes Catalanes amb Accés Obert (600+ open-access Catalan academic journals)
+- catalonica:upcommons → UPC engineering/architecture (theses, papers, TFG/TFM)
+- catalonica:ddduab/dddua-recerca/dddua-recursosdocents/dddua-v2 → UAB (research, teaching, heritage)
+- catalonica:mnac → Museu Nacional d'Art de Catalunya (Catalan art: modernisme, noucentisme, romanesque, gothic)
+- catalonica:mdc → Memòria Digital de Catalunya (broad heritage aggregator: cartells, fotos, manuscrits, premsa local CSUC)
+- catalonica:bipadi → Biblioteca Patrimonial Digital UB (manuscripts, incunabula, rare books)
+- catalonica:cartoteca → Cartoteca Digital ICGC (historical maps and atlases)
+- catalonica:arca → Arxiu de Revistes Catalanes Antigues (historical magazines/newspapers)
+- catalonica:hcc → Hemeroteca Científica Catalana (historical scientific journals)
+- catalonica:reus → Reus historical local press (1850-1940)
+- catalonica:iei → Institut d'Estudis Ilerdencs — Lleida heritage and press
+- catalonica:repositori_filmoteca → Filmoteca de Catalunya (cinema heritage, posters)
+- catalonica:corpusliterari → Catalan literature critical editions
+- catalonica:dd → Dipòsit Digital UB; catalonica:o2uoc → UOC; catalonica:e-repositori → UPF; catalonica:udlobert → UdL; catalonica:uivic → UVic
+- catalonica:bcnroc → Barcelona City Council reports/studies; catalonica:trencadis → XBM local municipal heritage
+- catalonica:rcub → UB journals; catalonica:rde → Dept Educació; catalonica:calaix → Dept Cultura; catalonica:drac → Recursos Cultura
+- catalonica:arxiuparaula → Ateneu Barcelonès oral archive; catalonica:egranados → Enric Granados archive; catalonica:bilderatlas → image archive
+- catalonica:dugidocs/dugife/dugimedia → UdG; catalonica:udlfonsespecials → UdL; catalonica:rd_tecnocampus → TecnoCampus; catalonica:maco → Catalan academic monographs; catalonica:regira → Girona heritage
+For an unknown query, suggest the best match by topic (see above), then fall back to catalonica:mdc (broadest aggregator). Each get_dataset_info(catalonica:<set>) returns full metadata including subportal native search URL.
 
 MUNICIPAL DATA (filter by NOM_ENS with query_dataset):
 - aoc:ge-ge-cost-efectiu-serveis-minhap → Cost dels serveis de +1,000 municipis (municipal service costs)
@@ -100,7 +106,7 @@ NOTES:
 - Use search_datasets only when you don't know which dataset you need.`;
 
 const server = new McpServer(
-  { name: "opendata-cat", version: "0.4.0" },
+  { name: "opendata-cat", version: "0.4.1" },
   { instructions: INSTRUCTIONS },
 );
 
@@ -116,7 +122,7 @@ server.tool(
   },
   async ({ query, portal, category, limit }) => {
     const result = await searchDatasets(query, portal, category, limit);
-    const queryableTypes = new Set(["socrata", "ckan", "opendatasoft", "idescat", "diba", "diba_cido", "renfe_gtfsrt_json", "ine", "ree", "cnmc", "ckan_opendata"]);
+    const queryableTypes = new Set(["socrata", "ckan", "opendatasoft", "idescat", "diba", "diba_cido", "renfe_gtfsrt_json", "ine", "ree", "cnmc", "ckan_opendata", "catalonica_search"]);
     const enriched = {
       ...result,
       items: result.items.map((item) => ({
@@ -490,6 +496,29 @@ server.tool(
               total,
               count: data.length,
               data,
+            }, null, 2),
+          }],
+        };
+      } else if (dataset.api_type === "catalonica_search") {
+        // Catalònica is AJAX-driven and has no JSON API; return a search guide
+        // (native URL + aggregator URL + topic hints) so the LLM can direct
+        // the user to the correct cercador.
+        let url = dataset.api_endpoint;
+        const sep = url.includes("?") ? "&" : "?";
+        if (search) url += `${sep}q=${encodeURIComponent(search)}`;
+        const resp = await fetch(url);
+        const json = await resp.json() as { success?: boolean; result?: Record<string, unknown> };
+        if (!json.success || !json.result) {
+          return { content: [{ type: "text" as const, text: "Error querying Catalònica search guide" }] };
+        }
+        return {
+          content: [{
+            type: "text" as const,
+            text: JSON.stringify({
+              dataset: dataset.name,
+              source: "Catalònica (Biblioteca de Catalunya) — search guide",
+              ...json.result,
+              note: "No JSON API. Direct the user to search_url_native (best UX) or search_url_aggregator. DO NOT fabricate records.",
             }, null, 2),
           }],
         };
@@ -1018,7 +1047,7 @@ async function main() {
       // Health check
       if (req.url === "/health") {
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.4.0" }));
+        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.4.1" }));
         return;
       }
 
