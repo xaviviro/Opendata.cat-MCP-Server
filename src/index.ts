@@ -53,9 +53,15 @@ CORA RESEARCH DATA (academic datasets via CKAN datastore):
 
 CATALÒNICA DIGITAL HERITAGE (Biblioteca de Catalunya — live, NOT indexed):
 Use query_dataset('catalonica:<set>', search='<text>').
-TWO BEHAVIOURS:
-  • catalonica:upcommons and catalonica:tdx → REAL RECORDS returned (title, creator, date, url_resource, abstract for TDX). DSpace 7 JSON API for UPC; HTML scrape for TDX.
-  • All other subportals → SEARCH GUIDE (search_url_native + search_url_aggregator + topic hints, no records). Direct the user to the URL; do NOT fabricate records.
+14 subportals return REAL RECORDS via native API/scrape; the rest return a SEARCH GUIDE with native cercador URL.
+NATIVE-HANDLER SUBPORTALS (real records, citable):
+  • DSpace 7: catalonica:upcommons, catalonica:o2uoc, catalonica:e-repositori, catalonica:dd, catalonica:udlobert, catalonica:udlfonsespecials
+  • DSpace XMLUI: catalonica:tdx, catalonica:uivic, catalonica:repositori_filmoteca, catalonica:calaix
+  • DSpace JSPUI: catalonica:bcnroc
+  • CONTENTdm: catalonica:mdc
+  • Invenio MARC XML: catalonica:ddduab, catalonica:ddduabrecerca
+SEARCH-GUIDE SUBPORTALS (URLs + topic hints, no records — direct the user to search_url_native, do NOT fabricate records):
+  catalonica:arca, hcc, reus, iei, trencadis, corpusliterari, regira, arxiuparaula, bipadi, rde, rd_tecnocampus, drac, maco, dugidocs, dugife, dugimedia, raco, rcub, mnac, cartoteca, egranados, p3d, bilderatlas, ddduabrecursosdocents, ddduabv2
 Pick the subportal by topic:
 - catalonica:tdx → Tesis Doctorals en Xarxa (doctoral theses by author, supervisor, university, topic)
 - catalonica:raco → Revistes Catalanes amb Accés Obert (600+ open-access Catalan academic journals)
@@ -109,7 +115,7 @@ NOTES:
 - Use search_datasets only when you don't know which dataset you need.`;
 
 const server = new McpServer(
-  { name: "opendata-cat", version: "0.4.2" },
+  { name: "opendata-cat", version: "0.4.3" },
   { instructions: INSTRUCTIONS },
 );
 
@@ -1050,7 +1056,7 @@ async function main() {
       // Health check
       if (req.url === "/health") {
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.4.2" }));
+        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.4.3" }));
         return;
       }
 

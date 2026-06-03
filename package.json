@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "MCP server for querying Catalan public open data — 15 portals: government, Spanish stats, CORA academic research, Catalònica digital heritage (~2.2M cultural objects)",
   "type": "module",
   "main": "dist/index.js",
