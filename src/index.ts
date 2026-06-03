@@ -53,17 +53,17 @@ CORA RESEARCH DATA (academic datasets via CKAN datastore):
 
 CATALÒNICA DIGITAL HERITAGE (Biblioteca de Catalunya — live, NOT indexed):
 Use query_dataset('catalonica:<set>', search='<text>').
-16 subportals return REAL RECORDS via native API/scrape; the rest return a SEARCH GUIDE with native cercador URL.
+18 subportals return REAL RECORDS via native API/scrape; the rest return a SEARCH GUIDE with native cercador URL.
 NATIVE-HANDLER SUBPORTALS (real records, citable):
   • DSpace 7: catalonica:upcommons, catalonica:o2uoc, catalonica:e-repositori, catalonica:dd, catalonica:udlobert, catalonica:udlfonsespecials
   • DSpace XMLUI: catalonica:tdx, catalonica:uivic, catalonica:repositori_filmoteca, catalonica:calaix
   • DSpace JSPUI: catalonica:bcnroc
   • CONTENTdm: catalonica:mdc
   • Invenio MARC XML: catalonica:ddduab, catalonica:ddduabrecerca
-  • Europeana API: catalonica:mnac (MNAC art collection via Europeana — the museum's own site is behind Cloudflare WAF)
+  • Europeana API: catalonica:mnac (art), catalonica:arca (Catalan historical press, ~229K records), catalonica:cartoteca (historical maps ICGC)
   • Hardcoded journal catalogue: catalonica:raco (matching RACO journals by keywords; each record is a journal with url_resource and search_within_journal — drill in for articles)
 SEARCH-GUIDE SUBPORTALS (URLs + topic hints, no records — direct the user to search_url_native, do NOT fabricate records):
-  catalonica:arca, hcc, reus, iei, trencadis, corpusliterari, regira, arxiuparaula, bipadi, rde, rd_tecnocampus, drac, maco, dugidocs, dugife, dugimedia, rcub, cartoteca, egranados, p3d, bilderatlas, ddduabrecursosdocents, ddduabv2
+  catalonica:hcc, reus, iei, trencadis, corpusliterari, regira, arxiuparaula, bipadi, rde, rd_tecnocampus, drac, maco, dugidocs, dugife, dugimedia, rcub, egranados, p3d, bilderatlas, ddduabrecursosdocents, ddduabv2
 Pick the subportal by topic:
 - catalonica:tdx → Tesis Doctorals en Xarxa (doctoral theses by author, supervisor, university, topic)
 - catalonica:raco → Revistes Catalanes amb Accés Obert (600+ open-access Catalan academic journals)
@@ -117,7 +117,7 @@ NOTES:
 - Use search_datasets only when you don't know which dataset you need.`;
 
 const server = new McpServer(
-  { name: "opendata-cat", version: "0.4.4" },
+  { name: "opendata-cat", version: "0.4.5" },
   { instructions: INSTRUCTIONS },
 );
 
@@ -1058,7 +1058,7 @@ async function main() {
       // Health check
       if (req.url === "/health") {
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.4.4" }));
+        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.4.5" }));
         return;
       }
 
