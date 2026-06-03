@@ -51,8 +51,11 @@ CORA RESEARCH DATA (academic datasets via CKAN datastore):
 - cora:covid-normes-espanya → COVID-19 Social Norms Spain 2020: 4,523 responses during lockdown on compliance, informal sanctions, risk perception (62 variables)
 - cora:depcura-bcn → Care & Dependency Barcelona 2020: 1,600 people aged 65+ with functional dependency, 639 variables on care strategies and social services
 
-CATALÒNICA DIGITAL HERITAGE (Biblioteca de Catalunya — live search guide, NOT indexed):
-Use query_dataset('catalonica:<set>', search='<text>') to get a SEARCH GUIDE: native subportal URL pre-filled with the query, aggregator fallback URL, plus topic hints (content_type, best_for, languages, search_examples). Catalònica has no JSON API; direct the user to search_url_native or search_url_aggregator. DO NOT fabricate records.
+CATALÒNICA DIGITAL HERITAGE (Biblioteca de Catalunya — live, NOT indexed):
+Use query_dataset('catalonica:<set>', search='<text>').
+TWO BEHAVIOURS:
+  • catalonica:upcommons and catalonica:tdx → REAL RECORDS returned (title, creator, date, url_resource, abstract for TDX). DSpace 7 JSON API for UPC; HTML scrape for TDX.
+  • All other subportals → SEARCH GUIDE (search_url_native + search_url_aggregator + topic hints, no records). Direct the user to the URL; do NOT fabricate records.
 Pick the subportal by topic:
 - catalonica:tdx → Tesis Doctorals en Xarxa (doctoral theses by author, supervisor, university, topic)
 - catalonica:raco → Revistes Catalanes amb Accés Obert (600+ open-access Catalan academic journals)
@@ -106,7 +109,7 @@ NOTES:
 - Use search_datasets only when you don't know which dataset you need.`;
 
 const server = new McpServer(
-  { name: "opendata-cat", version: "0.4.1" },
+  { name: "opendata-cat", version: "0.4.2" },
   { instructions: INSTRUCTIONS },
 );
 
@@ -1047,7 +1050,7 @@ async function main() {
       // Health check
       if (req.url === "/health") {
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.4.1" }));
+        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.4.2" }));
         return;
       }
 
