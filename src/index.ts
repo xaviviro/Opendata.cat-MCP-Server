@@ -51,6 +51,24 @@ CORA RESEARCH DATA (academic datasets via CKAN datastore):
 - cora:covid-normes-espanya → COVID-19 Social Norms Spain 2020: 4,523 responses during lockdown on compliance, informal sanctions, risk perception (62 variables)
 - cora:depcura-bcn → Care & Dependency Barcelona 2020: 1,600 people aged 65+ with functional dependency, 639 variables on care strategies and social services
 
+CATALÒNICA DIGITAL HERITAGE (Biblioteca de Catalunya aggregator via OAI-PMH, ~2.2M cultural objects across 39 sets — use query_dataset with q for full-text search):
+- catalonica:mnac → Museu Nacional d'Art de Catalunya (paintings, drawings, sculptures)
+- catalonica:arca → Arxiu de Revistes Catalanes Antigues (historical Catalan magazines)
+- catalonica:mdc → Memòria Digital de Catalunya (heritage aggregator)
+- catalonica:raco → Revistes Catalanes amb Accés Obert (open-access journals)
+- catalonica:tdx → Tesis Doctorals en Xarxa (Catalan doctoral theses)
+- catalonica:bipadi → Biblioteca Patrimonial Digital UB
+- catalonica:cartoteca → Cartoteca Digital (maps)
+- catalonica:corpusliterari → Corpus Literari Digital
+- catalonica:hcc → Hemeroteca Científica Catalana
+- catalonica:reus → Hemeroteca Reus (historical local press)
+- catalonica:repositori_filmoteca → Catalan Filmoteca digital repository
+- catalonica:iei → Institut d'Estudis Ilerdencs
+- catalonica:arxiuparaula → Arxiu de la Paraula de l'Ateneu Barcelonès (oral archive)
+- catalonica:bilderatlas → Bilderatlas.net image archive
+- (also: bcnroc, calaix, regira, dd, trencadis, dugidocs, dugife, dugimedia, rcub, rde, upcommons, o2uoc, drac, e-repositori, udlfonsespecials, udlobert, dddua, rd_tecnocampus, uivic, maco, ...)
+Fields per record: title, creator, publisher, date, type, subject, description, language, url_resource, url_catalonica, rights. Filter examples: {q: 'Picasso'}, {creator: 'Ramon Casas'}, {language: 'cat'}.
+
 MUNICIPAL DATA (filter by NOM_ENS with query_dataset):
 - aoc:ge-ge-cost-efectiu-serveis-minhap → Cost dels serveis de +1,000 municipis (municipal service costs)
 - aoc:ge-p-pressupostos-i-plantilles → Pressupostos i plantilles municipals (budgets & staffing)
@@ -59,7 +77,7 @@ MUNICIPAL DATA (filter by NOM_ENS with query_dataset):
 - aoc:ge-ge-termini-pagament-proveidors → Payment terms to suppliers
 
 AVAILABLE PORTALS:
-generalitat (Socrata, ~1063), aoc (CKAN, ~894), barcelona (CKAN, ~555), idescat (API, ~138), reus (CKAN, ~119), diba (REST+CIDO, ~91), girona (CKAN, ~53), fgc (ODS+GTFS-RT, ~50), cora (CKAN Datastore, 9 academic), ine (statistics API, ~6), renfe (CKAN+GTFS-RT, ~6), ree (energy API, ~4), sepe (employment, ~2), cnmc (fuel prices, ~1)
+generalitat (Socrata, ~1063), aoc (CKAN, ~894), barcelona (CKAN, ~555), idescat (API, ~138), reus (CKAN, ~119), diba (REST+CIDO, ~91), girona (CKAN, ~53), fgc (ODS+GTFS-RT, ~50), catalonica (OAI-PMH, ~39 cultural-heritage sets ≈2.2M items), cora (CKAN Datastore, 9 academic), ine (statistics API, ~6), renfe (CKAN+GTFS-RT, ~6), ree (energy API, ~4), sepe (employment, ~2), cnmc (fuel prices, ~1)
 
 COMMON SEARCH KEYWORDS:
 embassament, sequera, aigua, qualitat aire, contaminació, transport, trànsit, pressupost, educació, salut, població, habitatge, turisme, energia, residus, comerç, seguretat, bombers, accidents, 112, emergència, trens, rodalies, renfe, meteorologia, temps, temperatura, pluja, atur, ocupació, gasolina, carburants, PIB, IPC, electricitat, preu llum
@@ -77,11 +95,12 @@ NOTES:
 - REE: electricity data (national level). Generation, demand, balance, real-time prices.
 - CNMC fuel prices: all Spanish gas stations, filter by province/municipality in results.
 - CORA datasets: CKAN-compatible datastore. Filter by any field (case-insensitive). Survey datasets use coded values. Wave-based panels (polat) have field 'wave'. Use list_dataset_fields to see all columns.
+- Catalònica: each dataset_id 'catalonica:<set>' is one digital-heritage collection (thousands to millions of records). Use 'q' for free-text search on title/creator/subject/description (very effective — try keywords like 'Picasso', 'manuscrit medieval'). Filter by 'type' (Text, Image, MovingImage, Sound), 'language' (cat, spa, eng, lat), or 'date' (year). 'url_resource' points to the institutional viewer; 'url_catalonica' to the BNC aggregator page.
 - Dataset names and field names are in Catalan or Spanish — use them as-is in queries.
 - Use search_datasets only when you don't know which dataset you need.`;
 
 const server = new McpServer(
-  { name: "opendata-cat", version: "0.3.6" },
+  { name: "opendata-cat", version: "0.4.0" },
   { instructions: INSTRUCTIONS },
 );
 
@@ -91,7 +110,7 @@ server.tool(
   "Search datasets by free text. Check server instructions first: many datasets can be queried directly with query_dataset. Use search_datasets only when you don't know which dataset you need.",
   {
     query: z.string().describe("Search text in Catalan or Spanish. Examples: 'qualitat aire', 'pressupostos', 'rodalies'"),
-    portal: z.string().optional().describe("Filter by portal: 'generalitat', 'barcelona', 'diba', 'aoc', 'reus', 'girona', 'fgc', 'idescat', 'renfe', 'ine', 'ree', 'sepe', 'cnmc'"),
+    portal: z.string().optional().describe("Filter by portal: 'generalitat', 'barcelona', 'diba', 'aoc', 'reus', 'girona', 'fgc', 'idescat', 'renfe', 'ine', 'ree', 'sepe', 'cnmc', 'cora', 'catalonica'"),
     category: z.string().optional().describe("Filter by thematic category"),
     limit: z.number().optional().default(20).describe("Maximum number of results (default: 20)"),
   },
@@ -999,7 +1018,7 @@ async function main() {
       // Health check
       if (req.url === "/health") {
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.3.6" }));
+        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.4.0" }));
         return;
       }
 
