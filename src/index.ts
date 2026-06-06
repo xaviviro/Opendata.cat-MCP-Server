@@ -125,7 +125,7 @@ RADIOTECA — Catalan radio archive (separate tool, NOT a dataset):
 - Example: "what did they say yesterday about the Pope's visit" → search_radioteca({query: "visita papa", year: "2025"}) and filter URL paths matching yesterday's date.`;
 
 const server = new McpServer(
-  { name: "opendata-cat", version: "0.5.0" },
+  { name: "opendata-cat", version: "0.5.1" },
   { instructions: INSTRUCTIONS },
 );
 
@@ -1078,6 +1078,78 @@ server.prompt(
   }),
 );
 
+server.prompt(
+  "radioteca_cerca_tema",
+  "Search radioteca.cat for radio episodes about a topic and summarize what was said, always with links to radioteca.cat.",
+  {
+    tema: z.string().describe("Topic to search in Catalan/Spanish radio archive (e.g., 'visita papa', 'eleccions municipals')"),
+    any: z.string().optional().describe("Filter by year (YYYY), default: current year"),
+    emissora: z.enum(["Catalunya Ràdio", "RAC1", "Catalunya Música", "iCat", "Catalunya Informació", "RTVE", "Cadena SER", "ara.cat"]).optional().describe("Filter by broadcaster"),
+  },
+  ({ tema, any, emissora }) => {
+    const filters: string[] = [];
+    if (any) filters.push(`year="${any}"`);
+    if (emissora) filters.push(`publisher="${emissora}"`);
+    const filtersTxt = filters.length ? ` (${filters.join(", ")})` : "";
+    const callArgs = [`query="${tema}"`, any ? `year="${any}"` : "", emissora ? `publisher="${emissora}"` : "", "limit=20"].filter(Boolean).join(", ");
+    return {
+      messages: [{
+        role: "user" as const,
+        content: {
+          type: "text" as const,
+          text: `Cerca a radioteca.cat tots els episodis de ràdio relacionats amb el tema: "${tema}"${filtersTxt}.\n\n`
+            + `1. Crida search_radioteca amb ${callArgs}\n`
+            + "2. Per a cada hit rellevant:\n"
+            + "   - Llista el títol de l'episodi, el programa, l'emissora i la data (extrau-la del camí /YYYY/MM/DD/ de l'URL o del subheading)\n"
+            + "   - Resumeix breument què s'hi va dir basant-te en el camp `description`\n"
+            + "   - INCLOU SEMPRE l'URL absolut de radioteca.cat com a link clicable — obligatori per traçabilitat (no parafrasegis sense link)\n"
+            + "3. Si hi ha molts resultats, agrupa per emissora o per programa\n"
+            + "4. Acaba amb una conclusió curta sobre què destaquen els mitjans sobre aquest tema\n\n"
+            + "Format de cada hit recomanat:\n"
+            + "- [TÍTOL EPISODI](URL) · *Programa* · Emissora · Data\n"
+            + "  Resum breu del que es va dir.",
+        },
+      }],
+    };
+  },
+);
+
+server.prompt(
+  "radioteca_avui",
+  "What did Catalan radio say today or yesterday about a topic — always cite radioteca.cat URLs for traceability.",
+  {
+    tema: z.string().describe("Topic to investigate (e.g., 'situació al Pròxim Orient', 'reforma laboral', 'cultura catalana')"),
+  },
+  ({ tema }) => {
+    const now = new Date();
+    const any = String(now.getUTCFullYear());
+    const fmt = (d: Date) => d.toISOString().slice(0, 10);
+    const avui = fmt(now);
+    const ahir = fmt(new Date(now.getTime() - 86400000));
+    return {
+      messages: [{
+        role: "user" as const,
+        content: {
+          type: "text" as const,
+          text: `Investiga què s'ha dit recentment a la ràdio catalana sobre: "${tema}".\n\n`
+            + `1. Crida search_radioteca amb query="${tema}", year="${any}", limit=30\n`
+            + "2. Filtra els resultats per data inspeccionant el camí URL `/YYYY/MM/DD/`:\n"
+            + `   - Avui (${avui}) i ahir (${ahir}): prioritat màxima\n`
+            + "   - Última setmana: prioritat alta\n"
+            + "   - Aquest mes: si no hi ha resultats més recents\n"
+            + "3. Per a cada episodi rellevant retornat:\n"
+            + "   - Cita el títol, programa, emissora i data exacta\n"
+            + "   - Resumeix què s'hi va dir basant-te en el camp `description`\n"
+            + "   - INCLOU SEMPRE l'URL absolut de radioteca.cat com a link clicable — obligatori per traçabilitat\n"
+            + "4. Compara els enfocaments de les diferents emissores (Catalunya Ràdio vs RAC1 vs RTVE...)\n"
+            + "5. Acaba amb un resum executiu de quina ha estat la cobertura del tema avui/ahir\n\n"
+            + "Si no hi ha resultats recents, digues-ho explícitament i ofereix els més propers a la data actual. No inventis ni parafrasegis sense l'URL d'origen.",
+        },
+      }],
+    };
+  },
+);
+
 async function main() {
   const mode = process.argv.includes("--http") ? "http" : "stdio";
   const port = parseInt(process.env.MCP_PORT || "3100", 10);
@@ -1095,7 +1167,7 @@ async function main() {
       // Health check
       if (req.url === "/health") {
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.5.0" }));
+        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.5.1" }));
         return;
       }
 

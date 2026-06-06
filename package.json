@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "MCP server for querying Catalan public open data — 15 portals + radio archive (radioteca.cat): government, Spanish stats, CORA research, Catalònica heritage (~2.2M items)",
   "type": "module",
   "main": "dist/index.js",
