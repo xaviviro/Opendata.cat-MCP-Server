@@ -1,17 +1,17 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.xaviviro/opendata-cat",
-  "description": "15 Catalan portals: gov, Spanish stats, CORA research, Catalònica heritage (~2.2M items).",
+  "description": "15 Catalan portals + radio archive: gov, INE/REE/CNMC, CORA, Catalònica, radioteca.cat.",
   "repository": {
     "url": "https://github.com/xaviviro/Opendata.cat-MCP-Server",
     "source": "github"
   },
-  "version": "0.4.6",
+  "version": "0.5.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@opendata.cat/mcp-server",
-      "version": "0.4.6",
+      "version": "0.5.0",
       "transport": {
         "type": "stdio"
       }

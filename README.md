@@ -118,6 +118,7 @@ https://opendata.cat/api/mcp
 | `list_portals` | Llista els 13 portals disponibles amb estadistiques |
 | `list_categories` | Llista categories i temes disponibles amb comptadors |
 | `related_datasets` | Retorna datasets relacionats d'altres portals |
+| `search_radioteca` | Cerca al cataleg de radioteca.cat (~485K episodis, programes i persones de Catalunya Radio, RAC1, Catalunya Musica, iCat, RTVE...). Sempre retorna URL absolut a radioteca.cat per trayabilitat |
 
 ### search_datasets
 
@@ -195,6 +196,12 @@ Documentacio interactiva (Swagger): **[opendata.cat/api/docs.html](https://opend
 [opendata.cat](https://opendata.cat) es una associacio catalana sense anim de lucre fundada el 2012 (registre 47468) dedicada a promoure la transparencia i l'acces a la informacio publica.
 
 ## Changelog
+
+### v0.5.0 (2026-06-06)
+- Nou tool `search_radioteca`: cerca a radioteca.cat (~485K documents de radio catalana — 8 emissores)
+- Filtres `publisher`, `year`, `type` (Episode/Program/Person)
+- Tots els hits inclouen URL absoluta a radioteca.cat per trayabilitat
+- Proxy server-side a opendata.cat — la clau de Typesense no s'exposa al paquet npm
 
 ### v0.3.1 (2026-04-17)
 - Handler CNMC preus carburants al paquet npm (abans nomes funcionava via HTTP)

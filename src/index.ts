@@ -114,10 +114,18 @@ NOTES:
 - CORA datasets: CKAN-compatible datastore. Filter by any field (case-insensitive). Survey datasets use coded values. Wave-based panels (polat) have field 'wave'. Use list_dataset_fields to see all columns.
 - Catalònica: each dataset_id 'catalonica:<set>' is one digital-heritage collection (thousands to millions of records). Use 'q' for free-text search on title/creator/subject/description (very effective — try keywords like 'Picasso', 'manuscrit medieval'). Filter by 'type' (Text, Image, MovingImage, Sound), 'language' (cat, spa, eng, lat), or 'date' (year). 'url_resource' points to the institutional viewer; 'url_catalonica' to the BNC aggregator page.
 - Dataset names and field names are in Catalan or Spanish — use them as-is in queries.
-- Use search_datasets only when you don't know which dataset you need.`;
+- Use search_datasets only when you don't know which dataset you need.
+
+RADIOTECA — Catalan radio archive (separate tool, NOT a dataset):
+- Use search_radioteca to query ~485K radio documents from 8 broadcasters (Catalunya Ràdio, RAC1, Catalunya Música, iCat, Catalunya Informació, RTVE, Cadena SER, ara.cat).
+- Searches name, description (contains a detailed summary of what was said in the episode), program and subheading.
+- Filters: publisher, year (YYYY), type (Episode/Program/Person).
+- Only year-level date filter is indexed. For a specific day, combine year + keywords and check the URL path (/YYYY/MM/DD/) or the 'subheading' field.
+- ALWAYS cite radioteca.cat as the source and include each hit's absolute 'url' in your reply for traceability — never paraphrase episodes without linking.
+- Example: "what did they say yesterday about the Pope's visit" → search_radioteca({query: "visita papa", year: "2025"}) and filter URL paths matching yesterday's date.`;
 
 const server = new McpServer(
-  { name: "opendata-cat", version: "0.4.6" },
+  { name: "opendata-cat", version: "0.5.0" },
   { instructions: INSTRUCTIONS },
 );
 
@@ -675,6 +683,35 @@ server.tool(
   },
 );
 
+// Tool 8: search_radioteca
+server.tool(
+  "search_radioteca",
+  "Search radio shows, episodes and people indexed at radioteca.cat (Catalan radio archive, ~485K documents from Catalunya Ràdio, RAC1, Catalunya Música, iCat, Catalunya Informació, RTVE, Cadena SER, ara.cat). Searches title, description (which contains a detailed summary of what was said), program name and subheading. Returns episodes (~473K), programs (~3K) and people (~9K). IMPORTANT: always cite radioteca.cat as the source and include each hit's absolute 'url' in your reply for traceability — never paraphrase episodes without linking.",
+  {
+    query: z.string().describe("Free text in Catalan or Spanish. Searches title, description (contains episode summary), program and subheading. Examples: 'visita papa', 'eleccions municipals', 'crisi habitatge', 'Albert Serra cinema'."),
+    publisher: z.enum(["Catalunya Ràdio", "RAC1", "Catalunya Música", "iCat", "Catalunya Informació", "RTVE", "Cadena SER", "ara.cat"]).optional().describe("Filter by broadcaster."),
+    year: z.string().optional().describe("Filter by year (4 digits, e.g. '2025'). NOTE: only year-level filtering is indexed; for a specific day combine year + keywords and inspect the URL path (radioteca URLs include /YYYY/MM/DD/) or the 'subheading' field which often contains the date."),
+    type: z.enum(["Episode", "Program", "Person"]).optional().describe("Filter by document type."),
+    limit: z.number().optional().default(10).describe("Maximum results (1-50). Default 10."),
+    offset: z.number().optional().default(0).describe("Pagination offset. Default 0."),
+  },
+  async ({ query, publisher, year, type, limit, offset }) => {
+    const params = new URLSearchParams({ q: query });
+    if (publisher) params.set("publisher", publisher);
+    if (year) params.set("year", year);
+    if (type) params.set("type", type);
+    if (limit !== undefined) params.set("limit", String(limit));
+    if (offset !== undefined) params.set("offset", String(offset));
+
+    const resp = await fetch(`https://opendata.cat/api/radioteca.php?${params.toString()}`);
+    if (!resp.ok) {
+      return { content: [{ type: "text" as const, text: JSON.stringify({ error: `Upstream error (HTTP ${resp.status})`, source: "radioteca.cat" }) }] };
+    }
+    const data = await resp.json();
+    return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] };
+  },
+);
+
 // ===== PROMPTS =====
 
 server.prompt(
@@ -1058,7 +1095,7 @@ async function main() {
       // Health check
       if (req.url === "/health") {
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.4.6" }));
+        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.5.0" }));
         return;
       }
 
