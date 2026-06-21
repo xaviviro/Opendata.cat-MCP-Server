@@ -12,7 +12,7 @@
 
 # Opendata.cat MCP Server
 
-Servidor [MCP](https://modelcontextprotocol.io/) (Model Context Protocol) que connecta els models de llenguatge (Claude, ChatGPT, Gemini...) amb les **dades obertes publiques de Catalunya**. Cerca datasets, explora metadades i consulta dades reals de 13 portals directament des del teu assistent d'IA.
+Servidor [MCP](https://modelcontextprotocol.io/) (Model Context Protocol) que connecta els models de llenguatge (Claude, ChatGPT, Gemini...) amb les **dades obertes publiques de Catalunya**. Cerca datasets, explora metadades i consulta dades reals de 15 portals directament des del teu assistent d'IA.
 
 Un projecte d'**[opendata.cat](https://opendata.cat)** — associacio sense anim de lucre fundada el 2012 que promou la transparencia, la difusio i l'estandarditzacio de les dades obertes a Catalunya. Inspirat en el projecte [datagouv-mcp](https://github.com/datagouv/datagouv-mcp) del govern frances.
 
@@ -41,7 +41,7 @@ Un projecte d'**[opendata.cat](https://opendata.cat)** — associacio sense anim
 | [SEPE](https://sepe.es) | 2 | Atur registrat i contractes per municipis catalans |
 | [CNMC / Ministeri](https://datos.gob.es) | 1 | Preus carburants a ~1.500 gasolineres de Catalunya, filtrables per municipi |
 
-**+2.850 datasets** de 13 portals. La majoria queryables amb filtres, cerca i paginacio.
+**+3.044 datasets** de 15 portals. La majoria queryables amb filtres, cerca i paginacio.
 
 El cataleg s'actualitza automaticament cada setmana. Crawling incremental amb `--portal` per carregar fonts noves sense re-escanejar tot.
 
@@ -111,11 +111,11 @@ https://opendata.cat/api/mcp
 
 | Tool | Descripcio |
 |------|-----------|
-| `search_datasets` | Cerca datasets per text lliure al cataleg de +2.850 datasets |
+| `search_datasets` | Cerca datasets per text lliure al cataleg de +3.044 datasets |
 | `get_dataset_info` | Retorna metadades completes: camps, tipus, llicencia, endpoint |
 | `list_dataset_fields` | Llista els camps d'un dataset amb nom, tipus i descripcio |
 | `query_dataset` | Consulta dades reals directament al portal origen |
-| `list_portals` | Llista els 13 portals disponibles amb estadistiques |
+| `list_portals` | Llista els 15 portals disponibles amb estadistiques |
 | `list_categories` | Llista categories i temes disponibles amb comptadors |
 | `related_datasets` | Retorna datasets relacionats d'altres portals |
 | `search_radioteca` | Cerca al cataleg de radioteca.cat (~485K episodis, programes i persones de Catalunya Radio, RAC1, Catalunya Musica, iCat, RTVE...). Sempre retorna URL absolut a radioteca.cat per trayabilitat |

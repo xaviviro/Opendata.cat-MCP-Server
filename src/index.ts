@@ -601,7 +601,7 @@ server.tool(
 // Tool 5: list_portals
 server.tool(
   "list_portals",
-  "List all 13 indexed Catalan and Spanish open data portals with dataset counts.",
+  "List all 15 indexed Catalan and Spanish open data portals with dataset counts.",
   {},
   async () => {
     const portals = [
