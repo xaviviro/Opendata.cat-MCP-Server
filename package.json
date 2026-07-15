@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "MCP server for querying Catalan public open data — 15 portals + radio archive (radioteca.cat): government, Spanish stats, CORA research, Catalònica heritage (~2.2M items)",
   "type": "module",
   "main": "dist/index.js",
@@ -12,10 +12,12 @@
   },
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "sync-skills": "rm -rf skills && cp -r ../opendata.cat/public/api/skills skills"
   },
   "files": [
-    "dist/"
+    "dist/",
+    "skills/"
   ],
   "keywords": [
     "mcp",

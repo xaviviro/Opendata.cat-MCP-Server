@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { readdirSync, readFileSync, existsSync } from "node:fs";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
@@ -125,7 +128,7 @@ RADIOTECA — Catalan radio archive (separate tool, NOT a dataset):
 - Example: "what did they say yesterday about the Pope's visit" → search_radioteca({query: "visita papa", year: "2025"}) and filter URL paths matching yesterday's date.`;
 
 const server = new McpServer(
-  { name: "opendata-cat", version: "0.5.1" },
+  { name: "opendata-cat", version: "0.6.0" },
   { instructions: INSTRUCTIONS },
 );
 
@@ -1150,6 +1153,56 @@ server.prompt(
   },
 );
 
+// --- Skills: served as MCP resources (skill://<name>/SKILL.md) + prompt bridges (skill_<name>) ---
+// Single source of truth = the bundled skills/ directory (kept in sync with public/api/skills/
+// in the web repo). Each SKILL.md is exposed both as a resource and as a slash-command prompt.
+function loadSkills() {
+  const candidates = [
+    fileURLToPath(new URL("../skills", import.meta.url)),
+    fileURLToPath(new URL("./skills", import.meta.url)),
+  ];
+  const base = candidates.find((p) => existsSync(p));
+  if (!base) return;
+
+  for (const name of readdirSync(base)) {
+    if (!/^[a-z0-9-]+$/.test(name)) continue; // strict dir name
+    const skillFile = join(base, name, "SKILL.md");
+    if (!existsSync(skillFile)) continue;
+
+    const text = readFileSync(skillFile, "utf-8");
+    let title = name;
+    let description = `Load the ${name} skill.`;
+    const fm = /^---\s*\n([\s\S]*?)\n---/.exec(text);
+    if (fm) {
+      const t = /^name:\s*(.+)$/m.exec(fm[1]);
+      if (t) title = t[1].trim();
+      const d = /^description:\s*(.+)$/m.exec(fm[1]);
+      if (d) description = d[1].trim();
+    }
+
+    server.resource(
+      name,
+      `skill://${name}/SKILL.md`,
+      { title, description, mimeType: "text/markdown" },
+      async (uri: URL) => ({
+        contents: [{ uri: uri.href, mimeType: "text/markdown", text }],
+      }),
+    );
+
+    server.prompt(
+      `skill_${name.replace(/-/g, "_")}`,
+      description,
+      () => ({
+        messages: [{
+          role: "user" as const,
+          content: { type: "text" as const, text },
+        }],
+      }),
+    );
+  }
+}
+loadSkills();
+
 async function main() {
   const mode = process.argv.includes("--http") ? "http" : "stdio";
   const port = parseInt(process.env.MCP_PORT || "3100", 10);
@@ -1167,7 +1220,7 @@ async function main() {
       // Health check
       if (req.url === "/health") {
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.5.1" }));
+        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.6.0" }));
         return;
       }
 

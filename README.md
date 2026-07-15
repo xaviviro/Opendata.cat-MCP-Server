@@ -148,6 +148,23 @@ Exemples de filtres per fonts estatals:
 - REE: `ree:preus-electricitat` — preus PVPC per hora
 - CNMC: `filters: {"municipi": "Sabadell"}` — gasolineres de Sabadell
 
+## Skills
+
+A més de les tools i els prompts, el servidor publica **skills**: guies d'investigació
+(estil `SKILL.md`) que orienten l'LLM pas a pas en un domini concret — com triar el dataset,
+filtrar, paginar i citar bé. Es distribueixen dins el paquet (`skills/`) i es serveixen com a
+**resources** MCP (`skill://<nom>/SKILL.md`, via `resources/list` + `resources/read`) i com a
+**prompts-pont** invocables com a slash-command (`/mcp__opendata_cat__skill_<nom>`).
+
+| Skill | Per a què |
+| --- | --- |
+| `consulta-dades-obertes` | Orientació general: navegar els 15 portals, consultar directe vs cercar, paginació, cites |
+| `contractacio-publica` | Investigar contractació pública: creuar PSCP, registres municipals i adjudicacions, sumar imports |
+| `radar-municipal` | Retrat complet d'un municipi creuant portals (pressupost, deute, contractes, població) |
+| `patrimoni-i-hemeroteca` | Recerca a Catalònica (BNC) i radioteca.cat amb selecció de subportal i cites obligatòries |
+
+Les mateixes skills es serveixen també des de l'endpoint HTTP `https://opendata.cat/api/mcp`.
+
 ## Exemples d'us
 
 Un cop configurat, pots fer preguntes al teu LLM com:
@@ -196,6 +213,11 @@ Documentacio interactiva (Swagger): **[opendata.cat/api/docs.html](https://opend
 [opendata.cat](https://opendata.cat) es una associacio catalana sense anim de lucre fundada el 2012 (registre 47468) dedicada a promoure la transparencia i l'acces a la informacio publica.
 
 ## Changelog
+
+### v0.6.0 (2026-07-15)
+- Noves **skills** servides com a resources MCP (`skill://<nom>/SKILL.md`) + prompts-pont (`skill_<nom>`)
+- 4 skills d'investigació: `consulta-dades-obertes`, `contractacio-publica`, `radar-municipal`, `patrimoni-i-hemeroteca`
+- Empaquetades a `skills/` i sincronitzades amb l'endpoint HTTP `opendata.cat/api/mcp`
 
 ### v0.5.0 (2026-06-06)
 - Nou tool `search_radioteca`: cerca a radioteca.cat (~485K documents de radio catalana — 8 emissores)
