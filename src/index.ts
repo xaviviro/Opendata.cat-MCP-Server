@@ -97,7 +97,7 @@ MUNICIPAL DATA (filter by NOM_ENS with query_dataset):
 - aoc:ge-ge-termini-pagament-proveidors → Payment terms to suppliers
 
 AVAILABLE PORTALS:
-generalitat (Socrata, ~1063), aoc (CKAN, ~894), barcelona (CKAN, ~555), idescat (API, ~138), reus (CKAN, ~119), diba (REST+CIDO, ~91), girona (CKAN, ~53), fgc (ODS+GTFS-RT, ~50), catalonica (OAI-PMH, ~39 cultural-heritage sets ≈2.2M items), cora (CKAN Datastore, 9 academic), ine (statistics API, ~6), renfe (CKAN+GTFS-RT, ~6), ree (energy API, ~4), sepe (employment, ~2), cnmc (fuel prices, ~1)
+generalitat (Socrata, ~1091), aoc (CKAN, ~903), barcelona (CKAN, ~555), idescat (API, ~144), reus (CKAN, ~119), diba (REST+CIDO, ~91), girona (CKAN, ~53), fgc (ODS+GTFS-RT, ~50), catalonica (OAI-PMH, ~39 cultural-heritage sets ≈2.2M items), cora (CKAN Datastore, 9 academic), ine (statistics API, ~6), renfe (CKAN+GTFS-RT, ~6), ree (energy API, ~4), sepe (employment, ~2), cnmc (fuel prices, ~1)
 
 COMMON SEARCH KEYWORDS:
 embassament, sequera, aigua, qualitat aire, contaminació, transport, trànsit, pressupost, educació, salut, població, habitatge, turisme, energia, residus, comerç, seguretat, bombers, accidents, 112, emergència, trens, rodalies, renfe, meteorologia, temps, temperatura, pluja, atur, ocupació, gasolina, carburants, PIB, IPC, electricitat, preu llum

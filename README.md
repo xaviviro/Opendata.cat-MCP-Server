@@ -41,7 +41,7 @@ Un projecte d'**[opendata.cat](https://opendata.cat)** — associacio sense anim
 | [SEPE](https://sepe.es) | 2 | Atur registrat i contractes per municipis catalans |
 | [CNMC / Ministeri](https://datos.gob.es) | 1 | Preus carburants a ~1.500 gasolineres de Catalunya, filtrables per municipi |
 
-**+3.044 datasets** de 15 portals. La majoria queryables amb filtres, cerca i paginacio.
+**+3.073 datasets** de 15 portals. La majoria queryables amb filtres, cerca i paginacio.
 
 El cataleg s'actualitza automaticament cada setmana. Crawling incremental amb `--portal` per carregar fonts noves sense re-escanejar tot.
 
@@ -111,7 +111,7 @@ https://opendata.cat/api/mcp
 
 | Tool | Descripcio |
 |------|-----------|
-| `search_datasets` | Cerca datasets per text lliure al cataleg de +3.044 datasets |
+| `search_datasets` | Cerca datasets per text lliure al cataleg de +3.073 datasets |
 | `get_dataset_info` | Retorna metadades completes: camps, tipus, llicencia, endpoint |
 | `list_dataset_fields` | Llista els camps d'un dataset amb nom, tipus i descripcio |
 | `query_dataset` | Consulta dades reals directament al portal origen |
