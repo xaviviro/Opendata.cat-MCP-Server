@@ -128,7 +128,7 @@ RADIOTECA — Catalan radio archive (separate tool, NOT a dataset):
 - Example: "what did they say yesterday about the Pope's visit" → search_radioteca({query: "visita papa", year: "2025"}) and filter URL paths matching yesterday's date.`;
 
 const server = new McpServer(
-  { name: "opendata-cat", version: "0.6.0" },
+  { name: "opendata-cat", version: "0.6.1" },
   { instructions: INSTRUCTIONS },
 );
 
@@ -1220,7 +1220,7 @@ async function main() {
       // Health check
       if (req.url === "/health") {
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.6.0" }));
+        res.end(JSON.stringify({ status: "ok", name: "opendata-cat", version: "0.6.1" }));
         return;
       }
 

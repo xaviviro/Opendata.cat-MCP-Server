@@ -5,12 +5,22 @@
 export async function queryIdescat(
   endpoint: string,
 ): Promise<{ indicators: Record<string, unknown>[]; count: number }> {
-  // Extract indicator ID from endpoint (n=XXXXX or n=mXXXXX)
-  const idMatch = endpoint.match(/[?&]n=m?(\d+)/);
-  const targetId = idMatch ? `m${idMatch[1]}` : null;
+  // Current format: ?i=<id> — the API filters server-side.
+  // Legacy format: ?id=basics&n=<id> — Idescat ignores `n` since July 2026, so we
+  // have to fetch every indicator (max=200) and filter client-side.
+  const byId = endpoint.match(/[?&]i=(m\w+)/);
+  let targetId: string | null = null;
+  let allUrl: string;
 
-  // Fetch ALL indicators (max=200) and filter client-side
-  const allUrl = endpoint.replace(/&?n=m?\d+/, "").replace(/&?max=\d+/, "") + "&max=200";
+  if (byId) {
+    targetId = byId[1];
+    allUrl = endpoint;
+  } else {
+    const legacy = endpoint.match(/[?&]n=m?(\w+)/);
+    targetId = legacy ? `m${legacy[1]}` : null;
+    allUrl = endpoint.replace(/&?n=m?\w+/, "").replace(/&?max=\d+/, "") + "&max=200";
+  }
+
   const resp = await fetch(allUrl);
   if (!resp.ok) throw new Error(`Idescat error ${resp.status}: ${resp.statusText}`);
   const data = (await resp.json()) as {
