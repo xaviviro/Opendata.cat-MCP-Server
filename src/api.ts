@@ -1,5 +1,25 @@
 const API_BASE = "https://opendata.cat/api";
 
+export const SERVER_VERSION = "0.6.1";
+
+/**
+ * Client MCP connectat (clientInfo del handshake `initialize`).
+ * El protocol MCP NO transmet quin model LLM hi ha darrere: nomes l'aplicacio
+ * client. El propaguem al User-Agent perque opendata.cat pugui registrar-lo.
+ */
+let mcpClient = "unknown";
+
+export function setMcpClient(name?: string, version?: string): void {
+  if (!name) return;
+  const clean = (v: string) => v.replace(/[^\w.@/-]/g, "").slice(0, 60);
+  mcpClient = version ? `${clean(name)}/${clean(version)}` : clean(name);
+}
+
+/** Capçaleres per a totes les crides a opendata.cat. */
+export function mcpHeaders(): Record<string, string> {
+  return { "User-Agent": `opendata.cat-mcp/${SERVER_VERSION} (client: ${mcpClient})` };
+}
+
 export interface DatasetSummary {
   dataset_id: string;
   portal_id: string;
@@ -47,7 +67,7 @@ export async function searchDatasets(
   params.set("limit", String(limit));
   params.set("offset", String(offset));
 
-  const resp = await fetch(`${API_BASE}/datasets.php?${params}`);
+  const resp = await fetch(`${API_BASE}/datasets.php?${params}`, { headers: mcpHeaders() });
   if (!resp.ok) throw new Error(`API error ${resp.status}`);
   return (await resp.json()) as SearchResult;
 }
@@ -59,13 +79,13 @@ export interface CategoriesResult {
 }
 
 export async function getCategories(): Promise<CategoriesResult> {
-  const resp = await fetch(`${API_BASE}/categories.php`);
+  const resp = await fetch(`${API_BASE}/categories.php`, { headers: mcpHeaders() });
   if (!resp.ok) throw new Error(`API error ${resp.status}`);
   return (await resp.json()) as CategoriesResult;
 }
 
 export async function getDatasetInfo(datasetId: string): Promise<DatasetDetail | null> {
-  const resp = await fetch(`${API_BASE}/dataset.php?id=${encodeURIComponent(datasetId)}`);
+  const resp = await fetch(`${API_BASE}/dataset.php?id=${encodeURIComponent(datasetId)}`, { headers: mcpHeaders() });
   if (resp.status === 404) return null;
   if (!resp.ok) throw new Error(`API error ${resp.status}`);
   return (await resp.json()) as DatasetDetail;

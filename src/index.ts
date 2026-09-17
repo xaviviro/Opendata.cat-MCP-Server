@@ -8,7 +8,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { z } from "zod";
-import { searchDatasets, getDatasetInfo, getCategories } from "./api.js";
+import { searchDatasets, getDatasetInfo, getCategories, setMcpClient, mcpHeaders } from "./api.js";
 import { querySocrata } from "./clients/socrata.js";
 import { queryCkan } from "./clients/ckan.js";
 import { queryDiba } from "./clients/diba.js";
@@ -131,6 +131,13 @@ const server = new McpServer(
   { name: "opendata-cat", version: "0.6.1" },
   { instructions: INSTRUCTIONS },
 );
+
+// El handshake `initialize` porta clientInfo {name, version}: identifica
+// l'aplicacio client (Claude Desktop, Claude Code, Cursor...), mai el model LLM.
+server.server.oninitialized = () => {
+  const info = server.server.getClientVersion();
+  setMcpClient(info?.name, info?.version);
+};
 
 // Tool 1: search_datasets
 server.tool(
@@ -660,7 +667,7 @@ server.tool(
       return { content: [{ type: "text" as const, text: `Dataset '${dataset_id}' no trobat.` }] };
     }
     // Fetch related from API (stored in DB by enrichment script)
-    const resp = await fetch(`https://opendata.cat/api/dataset.php?id=${encodeURIComponent(dataset_id)}`);
+    const resp = await fetch(`https://opendata.cat/api/dataset.php?id=${encodeURIComponent(dataset_id)}`, { headers: mcpHeaders() });
     if (!resp.ok) {
       return { content: [{ type: "text" as const, text: "Error obtenint relacions." }] };
     }
@@ -706,7 +713,7 @@ server.tool(
     if (limit !== undefined) params.set("limit", String(limit));
     if (offset !== undefined) params.set("offset", String(offset));
 
-    const resp = await fetch(`https://opendata.cat/api/radioteca.php?${params.toString()}`);
+    const resp = await fetch(`https://opendata.cat/api/radioteca.php?${params.toString()}`, { headers: mcpHeaders() });
     if (!resp.ok) {
       return { content: [{ type: "text" as const, text: JSON.stringify({ error: `Upstream error (HTTP ${resp.status})`, source: "radioteca.cat" }) }] };
     }
