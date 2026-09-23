@@ -8,6 +8,7 @@
   <a href="https://github.com/xaviviro/Opendata.cat-MCP-Server"><img src="https://img.shields.io/github/v/tag/xaviviro/Opendata.cat-MCP-Server?label=github&color=1a1a1a" alt="github"></a>
   <a href="https://opendata.cat/mcp"><img src="https://img.shields.io/badge/web-opendata.cat%2Fmcp-c9a227" alt="web"></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-green" alt="license"></a>
+  <a href="https://mcpqueen.com/s/io.github.xaviviro/opendata-cat"><img src="https://mcpqueen.com/badge/io.github.xaviviro/opendata-cat.svg" alt="MCP Queen operational grade"></a>
 </p>
 
 # Opendata.cat MCP Server
